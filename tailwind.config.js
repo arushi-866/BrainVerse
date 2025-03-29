@@ -32,6 +32,12 @@ export default {
           800: '#4b598f',
           900: '#313b6c',
         },
+        midnight: {
+          900: '#0f172a',
+          800: '#1e293b',
+          700: '#334155',
+          600: '#475569',
+        }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],

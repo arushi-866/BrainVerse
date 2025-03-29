@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Brain, Menu, X, Bell, User, Search, LogOut, Settings, ChevronDown } from 'lucide-react';
+import logo from "../assets/logo.png";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,7 +51,8 @@ function Navbar() {
       <div className="container mx-auto flex items-center justify-between px-4">
         {/* Logo */}
         <div className="flex items-center space-x-2">
-          <Brain className="h-8 w-8 text-blue-400" />
+          <img src={logo.png} alt="" width="80px" height="80px" className='rounded-full'/>
+          {/* <Brain className="h-8 w-8 text-blue-400" /> */}
           <span className="text-xl font-semibold text-white">
             Br<span className="text-blue-400"></span>ai<span className="text-xl font-semibold text-white"></span>n<span className="text-blue-400">Verse</span>
           </span>

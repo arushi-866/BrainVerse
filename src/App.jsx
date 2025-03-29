@@ -12,6 +12,7 @@ import SignUp from "./components/SignUp";
 import Login from "./components/Login";
 import TextInput from "./components/TextInput";
 import About from "./pages/About";
+import Dashboard from "./components/Dashboard";
 
 function App() {
   const [text, setText] = useState("");
@@ -44,7 +45,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* <Navbar /> */}
+      <Navbar />
+      <Dashboard></Dashboard>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/summary" element={<Summary summary={summary} />} />

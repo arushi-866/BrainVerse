@@ -45,6 +45,16 @@ export default {
       boxShadow: {
         'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
       },
+      animation: {
+        bounce: 'bounce 1s infinite',
+        spin: 'spin 1s linear infinite',
+      },
+      keyframes: {
+        bounce: {
+          '0%, 100%': { transform: 'translateY(0)', opacity: '1' },
+          '50%': { transform: 'translateY(-25%)', opacity: '0.5' },
+        }
+      }
     },
   },
   plugins: [],

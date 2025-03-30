@@ -15,6 +15,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { ProtectedRoute } from "./utils/ProtectedRoute";
 import Summarizer from "./components/Summarizer";
 import ContactPage from "./pages/contactPage";
+import ChatAssistant from "./components/Chatbot/ChatAssistant";
 
 function App() {
   const [text, setText] = useState("");
@@ -25,7 +26,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      {/* <Summarizer></Summarizer> */}
+      
       {/* Add padding to prevent overlapping */}
       <div className="flex-grow pt-24 ">
         <Routes>
@@ -48,9 +49,11 @@ function App() {
                 <Dashboard userName="Arushi" ></Dashboard>
               </ProtectedRoute>
             }
-          />{" "}
+            />{" "}
         </Routes>
       </div>
+      
+            <ChatAssistant></ChatAssistant>
       <Footer />
     </div>
   );
@@ -58,5 +61,4 @@ function App() {
 
 export default App;
 
-//
-//
+

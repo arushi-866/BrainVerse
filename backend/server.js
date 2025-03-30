@@ -6,6 +6,9 @@ const fs = require('fs').promises;
 const multer = require('multer');
 const path = require('path');
 require('dotenv').config();
+const ytdl = require('ytdl-core');
+// const { TranscribeClient } = require('@aws-sdk/client-transcribe'); // Or use Whisper API
+
 
 const app = express();
 const port = 3001;
@@ -219,6 +222,103 @@ async function processDocument(file) {
   }
 }
 
+// Add this helper function with your other Gemini functions
+async function generateSummaryWithGemini(text) {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    
+    const prompt = `Provide the summary in clean plain text format:
+    - DO NOT use markdown (** or any formatting)
+    - Use ONLY these formatting rules:
+      • Main sections in ALL CAPS (no symbols)
+      - Sub-points with regular bullet points
+      -- Nested points with double dashes
+    - Example:
+      OPERATING SYSTEM BASICS
+      - System software managing resources
+      -- Manages both hardware and software
+    
+    Text to summarize:
+    ${text.substring(0, 30000)}`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    // Remove any remaining markdown
+    return response.text()
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '•');
+  } catch (error) {
+    console.error('Summary generation error:', error);
+    throw new Error('Failed to generate summary');
+  }
+}
+
+
+async function getYouTubeCaptions(videoId) {
+  try {
+    const info = await ytdl.getInfo(videoId);
+    
+    // Method 1: Check for automatic captions
+    let captions = info.player_response?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+    
+    // Method 2: Alternative caption location (some videos)
+    if (!captions || captions.length === 0) {
+      captions = info.player_response?.captions?.playerCaptionsTracklistRenderer?.translationLanguages;
+    }
+
+    // Method 3: Fallback to manual extraction if no captions
+    if (!captions || captions.length === 0) {
+      console.log('No captions found, falling back to transcript extraction');
+      const transcript = await extractTranscriptFromVideo(videoId);
+      return {
+        transcript,
+        videoDetails: {
+          title: info.videoDetails.title,
+          duration: info.videoDetails.lengthSeconds
+        }
+      };
+    }
+
+    // Find English captions or fallback to first available
+    const englishTrack = captions.find(track => track.languageCode === 'en') || captions[0];
+    
+    if (!englishTrack?.baseUrl) {
+      throw new Error('No caption track URL available');
+    }
+
+    const transcriptResponse = await fetch(englishTrack.baseUrl);
+    if (!transcriptResponse.ok) {
+      throw new Error(`Failed to fetch captions: ${transcriptResponse.statusText}`);
+    }
+    
+    const transcript = await transcriptResponse.text();
+    
+    return {
+      transcript,
+      videoDetails: {
+        title: info.videoDetails.title,
+        duration: info.videoDetails.lengthSeconds
+      }
+    };
+  } catch (error) {
+    console.error('Caption extraction failed:', error);
+    throw new Error(`Could not get captions: ${error.message}`);
+  }
+}
+
+
+async function extractTranscriptFromVideo(videoId) {
+  try {
+    // Try to get video description as fallback
+    const info = await ytdl.getInfo(videoId);
+    return info.videoDetails.description || 
+           "No captions available for this video. Please try a different video with captions.";
+  } catch (error) {
+    console.error('Fallback extraction failed:', error);
+    return "Could not extract any content from this video.";
+  }
+}
+
 // API Endpoint for generating mind map from text
 app.post('/api/generate-mind-map', async (req, res) => {
   try {
@@ -417,6 +517,100 @@ app.post('/generate-quiz', async (req, res) => {
   }
 });
 
+
+// Add this endpoint with your other routes
+app.post('/api/summarize-pdf', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No PDF file uploaded' });
+    }
+
+    // Use your existing text extraction function
+    const text = await extractTextFromPdf(req.file.path);
+    
+    // Generate summary using Gemini
+    const summary = await generateSummaryWithGemini(text);
+
+    res.json({
+      success: true,
+      summary: summary,
+      originalLength: text.length,
+      summaryLength: summary.length
+    });
+
+  } catch (error) {
+    console.error('PDF summarization error:', error);
+    res.status(500).json({ 
+      error: error.message || 'Failed to summarize PDF',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  } finally {
+    // Clean up uploaded file using your existing pattern
+    try {
+      await fs.unlink(req.file.path);
+    } catch (cleanupError) {
+      console.error('File cleanup error:', cleanupError);
+    }
+  }
+});
+
+// Update the /api/youtube-transcript endpoint
+app.post('/api/youtube-transcript', async (req, res) => {
+  try {
+    const { videoId } = req.body;
+    
+    if (!videoId) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'YouTube video ID is required' 
+      });
+    }
+
+    const { transcript, videoDetails } = await getYouTubeCaptions(videoId);
+    
+    res.json({
+      success: true,
+      transcript,
+      videoTitle: videoDetails.title,
+      duration: videoDetails.duration,
+      hasCaptions: transcript.includes("No captions") ? false : true
+    });
+  } catch (error) {
+    console.error('Transcript error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      suggestion: 'Try a different video with official captions',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+
+// YouTube Summary Endpoint
+app.post('/api/summarize-youtube', async (req, res) => {
+  try {
+    const { videoId } = req.body;
+    const { transcript, videoDetails } = await getYouTubeCaptions(videoId);
+    
+    // Use your existing summary function
+    const summary = await generateSummaryWithGemini(transcript);
+    
+    res.json({
+      success: true,
+      summary,
+      videoDetails
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      suggestion: error.message.includes('No captions') 
+        ? 'Try a different video with official captions' 
+        : 'Check the video ID and try again'
+    });
+  }
+});
 
 // Start server
 app.listen(port, () => {

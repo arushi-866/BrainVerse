@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { uploadPDF, extractYTTranscript, summarizeText } from "../api";
+import axios from "axios";
 import { ChevronRight, FileText, Youtube, Copy, Download, FileDown, RefreshCw, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
 
 const Summarizer = () => {
+  // State management
   const [file, setFile] = useState(null);
+  const [videoUrl, setVideoUrl] = useState("");
   const [videoId, setVideoId] = useState("");
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,12 +15,15 @@ const Summarizer = () => {
   const [copied, setCopied] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [captionWarning, setCaptionWarning] = useState(false);
+  const [videoInfo, setVideoInfo] = useState(null);
+  const [particles, setParticles] = useState([]);
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [transcript, setTranscript] = useState("");
   const fileInputRef = useRef(null);
   const summaryRef = useRef(null);
 
-  // Particle animation effect
-  const [particles, setParticles] = useState([]);
-  
+  // Confetti effect
   useEffect(() => {
     if (showConfetti) {
       const newParticles = Array.from({ length: 50 }, () => ({
@@ -29,18 +34,18 @@ const Summarizer = () => {
         speed: Math.random() * 3 + 1,
       }));
       setParticles(newParticles);
-      
+
       const timer = setTimeout(() => setShowConfetti(false), 3000);
       return () => clearTimeout(timer);
     }
   }, [showConfetti]);
 
-  // Animate particles
+  // Particle animation
   useEffect(() => {
     if (particles.length === 0) return;
-    
+
     const interval = setInterval(() => {
-      setParticles(prev => 
+      setParticles(prev =>
         prev.map(p => ({
           ...p,
           y: p.y + p.speed,
@@ -48,11 +53,11 @@ const Summarizer = () => {
         })).filter(p => p.y < window.innerHeight)
       );
     }, 16);
-    
+
     return () => clearInterval(interval);
   }, [particles]);
 
-  // Simulate progress during loading
+  // Progress simulation
   useEffect(() => {
     let interval;
     if (loading) {
@@ -68,7 +73,6 @@ const Summarizer = () => {
       }, 300);
     } else if (progress > 0) {
       setProgress(100);
-      // If we were loading and now we're not, and we have a summary, show success animation
       if (summary) {
         setShowConfetti(true);
       }
@@ -76,46 +80,108 @@ const Summarizer = () => {
     return () => clearInterval(interval);
   }, [loading, summary]);
 
-  // Handle PDF Upload
+  // PDF Summarization
   const handlePDFUpload = async () => {
-    if (!file) return alert("Please select a PDF file.");
+    if (!file) {
+      alert("Please select a PDF file first");
+      return;
+    }
+
     setLoading(true);
+    setSummary("");
+    setProgress(0);
+
     try {
-      const text = await uploadPDF(file);
-      const summary = await summarizeText(text);
-      setSummary(summary);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post('http://localhost:3001/api/summarize-pdf', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / (progressEvent.total || 1)
+          );
+          setProgress(percentCompleted);
+        }
+      });
+
+      setSummary(response.data.summary);
+      setShowConfetti(true);
+
     } catch (error) {
-      console.error("Error processing PDF:", error);
-      alert("Failed to process PDF. Please try again.");
+      console.error("PDF processing error:", error);
+      alert(error.response?.data?.error || "Failed to summarize PDF");
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle YouTube Video Summarization
-  const handleYTSummarization = async () => {
-    if (!videoId) return alert("Please enter a YouTube Video ID.");
-    setLoading(true);
-    try {
-      const text = await extractYTTranscript(videoId);
-      const summary = await summarizeText(text);
-      setSummary(summary);
-    } catch (error) {
-      console.error("Error processing YouTube video:", error);
-      alert("Failed to process YouTube video. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+// Replace the handleYTSummarization function with this:
+const handleYTSummarization = async () => {
+  if (!videoId) {
+    alert("Please enter a valid YouTube URL");
+    return;
+  }
 
-  // Copy summary to clipboard
+  setLoading(true);
+  setSummary("");
+  setTranscript("");
+  setShowTranscript(false);
+  setCaptionWarning(false);
+  setShowConfetti(false);
+
+  try {
+    // Get transcript
+    const transcriptResponse = await axios.post('http://localhost:3001/api/youtube-transcript', { 
+      videoId 
+    });
+    
+    if (!transcriptResponse.data.success) {
+      throw new Error(transcriptResponse.data.error || "Failed to get transcript");
+    }
+
+    setTranscript(transcriptResponse.data.transcript);
+    setVideoInfo({
+      title: transcriptResponse.data.videoTitle || 'Untitled Video',
+      duration: transcriptResponse.data.duration
+    });
+
+    // Show warning if no proper captions were found
+    if (!transcriptResponse.data.hasCaptions) {
+      setCaptionWarning(true);
+      alert('This video has no captions. Summary quality may be limited.');
+    }
+
+    // Generate summary
+    const summaryResponse = await axios.post('http://localhost:3001/api/summarize-youtube', {
+      videoId,
+      transcript: transcriptResponse.data.transcript
+    });
+
+    setSummary(summaryResponse.data.summary);
+    setShowConfetti(true);
+  } catch (error) {
+    console.error('YouTube summarization error:', error);
+    setCaptionWarning(true);
+    alert(
+      error.response?.data?.error || 
+      error.message || 
+      "Failed to summarize video. Try one with official captions."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // Helper functions
   const copyToClipboard = () => {
     navigator.clipboard.writeText(summary);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Download summary as text file
   const downloadSummaryAsText = () => {
     const element = document.createElement("a");
     const file = new Blob([summary], { type: "text/plain" });
@@ -126,51 +192,49 @@ const Summarizer = () => {
     document.body.removeChild(element);
   };
 
-  // Download summary as PDF
   const downloadSummaryAsPDF = () => {
     const doc = new jsPDF();
-    const title = activeTab === "pdf" ? "PDF Summary" : "YouTube Video Summary";
-    
-    // Add title
+    const title = activeTab === "pdf"
+      ? "PDF Summary"
+      : `YouTube Summary: ${videoInfo?.title || 'Untitled'}`;
+
     doc.setFontSize(16);
     doc.setTextColor(0, 51, 102);
     doc.text(title, 20, 20);
-    
-    // Add source info
+
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    let sourceInfo = "";
+
     if (activeTab === "pdf" && file) {
-      sourceInfo = `Source: ${file.name}`;
-    } else if (activeTab === "youtube" && videoId) {
-      sourceInfo = `Source: YouTube Video ID - ${videoId}`;
+      doc.text(`Source: ${file.name}`, 20, 30);
+    } else if (videoInfo) {
+      doc.text(`Source: YouTube Video - ${videoInfo.title}`, 20, 30);
     }
-    doc.text(sourceInfo, 20, 30);
-    
-    // Add date
+
     const date = new Date().toLocaleDateString();
     doc.text(`Generated on: ${date}`, 20, 35);
-    
-    // Add summary content with word wrapping
+
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     const splitText = doc.splitTextToSize(summary, 170);
     doc.text(splitText, 20, 45);
-    
-    doc.save("content-summary.pdf");
+
+    doc.save("summary.pdf");
   };
 
-  // Reset form
   const handleReset = () => {
     setFile(null);
+    setVideoUrl("");
     setVideoId("");
     setSummary("");
+    setVideoInfo(null);
+    setTranscript("");
+    setShowTranscript(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  // Handle drag and drop
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -179,7 +243,7 @@ const Summarizer = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const droppedFile = e.dataTransfer.files[0];
       if (droppedFile.type === "application/pdf") {
@@ -190,9 +254,16 @@ const Summarizer = () => {
     }
   };
 
+  const formatDuration = (seconds) => {
+    if (!seconds) return 'N/A';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-indigo-950 to-slate-900 text-blue-100 p-6 flex flex-col items-center">
-      {/* Floating particles for confetti effect */}
+      {/* Confetti particles */}
       {particles.map((particle, index) => (
         <motion.div
           key={index}
@@ -208,15 +279,15 @@ const Summarizer = () => {
           }}
         />
       ))}
-      
-      <motion.div 
+
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="w-full max-w-4xl bg-blue-950/30 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-blue-800/30 hover:border-blue-700/50 transition-all duration-500"
       >
         <div className="p-8">
-          <motion.h2 
+          <motion.h2
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 300 }}
@@ -239,11 +310,10 @@ const Summarizer = () => {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setActiveTab("pdf")}
-              className={`flex items-center justify-center w-1/2 py-3 px-4 rounded-md transition-all duration-300 ${
-                activeTab === "pdf"
+              className={`flex items-center justify-center w-1/2 py-3 px-4 rounded-md transition-all duration-300 ${activeTab === "pdf"
                   ? "bg-gradient-to-r from-blue-800 to-indigo-800 text-white shadow-lg"
                   : "text-blue-300 hover:bg-blue-800/30"
-              }`}
+                }`}
             >
               <FileText size={18} className="mr-2" />
               PDF Summarization
@@ -252,11 +322,10 @@ const Summarizer = () => {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setActiveTab("youtube")}
-              className={`flex items-center justify-center w-1/2 py-3 px-4 rounded-md transition-all duration-300 ${
-                activeTab === "youtube"
+              className={`flex items-center justify-center w-1/2 py-3 px-4 rounded-md transition-all duration-300 ${activeTab === "youtube"
                   ? "bg-gradient-to-r from-blue-800 to-indigo-800 text-white shadow-lg"
                   : "text-blue-300 hover:bg-blue-800/30"
-              }`}
+                }`}
             >
               <Youtube size={18} className="mr-2" />
               YouTube Summarization
@@ -276,11 +345,10 @@ const Summarizer = () => {
                 <div className="mb-6">
                   <label className="block text-blue-300 mb-2 text-sm font-medium">Upload PDF Document</label>
                   <div
-                    className={`w-full flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-300 ${
-                      file 
-                      ? "border-cyan-600 bg-blue-900/20" 
-                      : "border-blue-700 hover:border-blue-500 hover:bg-blue-900/20"
-                    }`}
+                    className={`w-full flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-300 ${file
+                        ? "border-cyan-600 bg-blue-900/20"
+                        : "border-blue-700 hover:border-blue-500 hover:bg-blue-900/20"
+                      }`}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
                   >
@@ -289,9 +357,15 @@ const Summarizer = () => {
                       type="file"
                       accept=".pdf"
                       className="hidden"
-                      onChange={(e) => setFile(e.target.files[0])}
+                      onChange={(e) => {
+                        if (e.target.files?.[0]?.type === "application/pdf") {
+                          setFile(e.target.files[0]);
+                        } else {
+                          alert("Please select a PDF file");
+                        }
+                      }}
                     />
-                    
+
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -304,9 +378,12 @@ const Summarizer = () => {
                       </span>
                       {file && (
                         <span className="text-xs text-blue-400 mt-2">
-                          {(file.size / (1024 * 1024)).toFixed(2)} MB
+                          {file.size / (1024 * 1024) > 1
+                            ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
+                            : `${Math.round(file.size / 1024)} KB`}
                         </span>
                       )}
+
                     </motion.div>
                   </div>
                 </div>
@@ -329,7 +406,7 @@ const Summarizer = () => {
                       </span>
                     )}
                   </motion.button>
-                  
+
                   {file && (
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -355,24 +432,78 @@ const Summarizer = () => {
                 transition={{ duration: 0.3 }}
               >
                 <div className="mb-6">
-                  <label className="block text-blue-300 mb-2 text-sm font-medium">YouTube Video ID</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <Youtube size={16} className="text-blue-500" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="e.g. dQw4w9WgXcQ"
-                      value={videoId}
-                      onChange={(e) => setVideoId(e.target.value)}
-                      className="w-full pl-10 p-3 bg-blue-950/50 border border-blue-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-blue-100 placeholder-blue-500 shadow-inner"
-                    />
-                  </div>
-                  <p className="text-xs text-blue-400 mt-2">
-                    Extract from URL: youtube.com/watch?v=<span className="text-cyan-400">dQw4w9WgXcQ</span>
-                  </p>
+                  <label className="block text-blue-300 mb-2 text-sm font-medium">YouTube Video URL</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. https://youtu.be/dQw4w9WgXcQ"
+                    value={videoUrl}
+                    onChange={(e) => {
+                      const url = e.target.value;
+                      setVideoUrl(url);
+                      
+                      // Extract ID but don't set it in state - let server handle it
+                      const id = url.match(
+                        /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+                      )?.[1];
+                      
+                      // Keep this for the embed preview but don't rely on it for API calls
+                      setVideoId(id || '');
+                    }}
+                    className="w-full p-3 bg-blue-950/50 border border-blue-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-blue-100 placeholder-blue-500 shadow-inner"
+                  />
+                  {!videoId && videoUrl && (
+                    <p className="text-xs text-amber-400 mt-2">
+                      Invalid YouTube URL - check the link
+                    </p>
+                  )}
+                  {captionWarning && (
+                    <p className="text-xs text-amber-400 mt-2">
+                      Note: Only videos with official captions can be processed
+                    </p>
+                  )}
                 </div>
-                <div className="flex gap-2">
+
+                {videoId && (
+                  <div className="mt-6 bg-blue-900/20 rounded-lg overflow-hidden">
+                    <div className="aspect-w-16 aspect-h-9">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}`}
+                        title="YouTube video player"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        className="w-full h-64"
+                      />
+                    </div>
+                    <div className="p-3 bg-blue-900/40 flex justify-between items-center">
+                      <span className="text-blue-300 text-sm">
+                        Now summarizing: {videoInfo?.title || "YouTube Video"}
+                      </span>
+                      <button
+                        onClick={() => setShowTranscript(!showTranscript)}
+                        className="text-cyan-400 hover:text-cyan-300 text-sm font-medium"
+                      >
+                        {showTranscript ? 'Hide Transcript' : 'Show Transcript'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {showTranscript && transcript && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-4 bg-blue-950/30 rounded-lg overflow-hidden"
+                  >
+                    <div className="p-4 max-h-64 overflow-y-auto">
+                      <h4 className="text-blue-300 font-medium mb-2">Full Transcript:</h4>
+                      <div className="whitespace-pre-wrap text-blue-200 text-sm">
+                        {transcript}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                <div className="flex gap-2 mt-4">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -391,8 +522,8 @@ const Summarizer = () => {
                       </span>
                     )}
                   </motion.button>
-                  
-                  {videoId && (
+
+                  {(videoUrl || videoInfo) && (
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -411,7 +542,7 @@ const Summarizer = () => {
           {/* Progress Bar */}
           <AnimatePresence>
             {loading && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
@@ -439,7 +570,7 @@ const Summarizer = () => {
           {/* Summary Section */}
           <AnimatePresence>
             {summary && (
-              <motion.div 
+              <motion.div
                 ref={summaryRef}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -460,7 +591,7 @@ const Summarizer = () => {
                       <Copy size={16} className="text-blue-300 group-hover:text-blue-100" />
                       <AnimatePresence>
                         {copied && (
-                          <motion.span 
+                          <motion.span
                             initial={{ opacity: 0, x: -5 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 5 }}
@@ -491,16 +622,40 @@ const Summarizer = () => {
                     </motion.button>
                   </div>
                 </div>
-                <div className="p-4 whitespace-pre-wrap bg-gradient-to-b from-blue-950/50 to-indigo-950/50 text-blue-200">
-                  {summary}
+                <div className="p-4 space-y-2 bg-gradient-to-b from-blue-950/50 to-indigo-950/50">
+                  {summary.split('\n').map((line, i) => {
+                    if (line.startsWith('•')) {
+                      return (
+                        <div key={i} className="flex items-start mt-2 mb-1">
+                          <Sparkles className="w-4 h-4 mt-1 mr-2 text-cyan-400 flex-shrink-0" />
+                          <span className="text-blue-100 font-medium">{line.substring(1).trim()}</span>
+                        </div>
+                      );
+                    } else if (line.startsWith('  -') || line.startsWith('-')) {
+                      return (
+                        <div key={i} className="flex items-start ml-6 mb-1">
+                          <span className="text-blue-300 mr-2">-</span>
+                          <span className="text-blue-200">{line.replace(/^[-\s]+/, '').trim()}</span>
+                        </div>
+                      );
+                    } else if (line.trim() === '') {
+                      return <br key={i} />;
+                    } else {
+                      return (
+                        <div key={i} className="text-blue-300 mt-2">
+                          {line}
+                        </div>
+                      );
+                    }
+                  })}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </motion.div>
-      
-      <motion.p 
+
+      <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Mail, Twitter, Linkedin, ChevronRight, Send } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
-
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
@@ -102,19 +102,50 @@ const Footer = () => {
               <span className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500" />
             </h3>
             <ul className="mt-6 space-y-3">
-              {["Home", "About", "Contact", "Privacy Policy"].map((link, index) => (
-                <li key={index} className="group">
-                  <a 
-                    href="#" 
-                    className="flex items-center text-blue-200 hover:text-cyan-300 transition-all duration-300 transform hover:translate-x-1"
-                  >
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity mr-1 text-cyan-400">
-                      <ChevronRight size={14} />
-                    </span>
-                    {link}
-                  </a>
-                </li>
-              ))}
+              <li className="group">
+                <Link 
+                  to="/" 
+                  className="flex items-center text-blue-200 hover:text-cyan-300 transition-all duration-300 transform hover:translate-x-1"
+                >
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity mr-1 text-cyan-400">
+                    <ChevronRight size={14} />
+                  </span>
+                  Home
+                </Link>
+              </li>
+              <li className="group">
+                <Link 
+                  to="/about" 
+                  className="flex items-center text-blue-200 hover:text-cyan-300 transition-all duration-300 transform hover:translate-x-1"
+                >
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity mr-1 text-cyan-400">
+                    <ChevronRight size={14} />
+                  </span>
+                  About
+                </Link>
+              </li>
+              <li className="group">
+                <Link 
+                  to="/contactpage" 
+                  className="flex items-center text-blue-200 hover:text-cyan-300 transition-all duration-300 transform hover:translate-x-1"
+                >
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity mr-1 text-cyan-400">
+                    <ChevronRight size={14} />
+                  </span>
+                  Contact
+                </Link>
+              </li>
+              <li className="group">
+                <Link 
+                  to="/PrivacyPolicy" 
+                  className="flex items-center text-blue-200 hover:text-cyan-300 transition-all duration-300 transform hover:translate-x-1"
+                >
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity mr-1 text-cyan-400">
+                    <ChevronRight size={14} />
+                  </span>
+                  Privacy Policy
+                </Link>
+              </li>
             </ul>
           </div>
           
@@ -198,9 +229,9 @@ const Footer = () => {
             © {new Date().getFullYear()} BrainVerse. All rights reserved.
           </div>
           <div className="flex space-x-6 mt-4 md:mt-0 scroll-animate opacity-0 transform translate-y-4 transition duration-700 delay-300">
-            <a href="#" className="hover:text-cyan-300 transition-colors">Terms</a>
-            <a href="#" className="hover:text-cyan-300 transition-colors">Privacy</a>
-            <a href="#" className="hover:text-cyan-300 transition-colors">Cookies</a>
+            <Link to="/terms" className="hover:text-cyan-300 transition-colors">Terms</Link>
+            <Link to="/privacy" className="hover:text-cyan-300 transition-colors">Privacy</Link>
+            <Link to="/cookies" className="hover:text-cyan-300 transition-colors">Cookies</Link>
           </div>
         </div>
       </div>

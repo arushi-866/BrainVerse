@@ -13,7 +13,7 @@ function FlashCards() {
   const [newCard, setNewCard] = useState({ question: "", answer: "" });
   const [isEditing, setIsEditing] = useState(false);
 
-  // Generate flash cards from input text
+  // Generate flash cards from input text using Gemini API
   const generateFlashCards = async () => {
     if (!inputText.trim()) {
       alert("Please enter some text first");
@@ -23,8 +23,7 @@ function FlashCards() {
     setLoading(true);
     
     try {
-      // Call the backend API to generate flash cards
-      const response = await axios.post("http://localhost:5000/generate-flashcards", { 
+      const response = await axios.post("http://localhost:3001/generate-flashcards", { 
         text: inputText 
       });
       

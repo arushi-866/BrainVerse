@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
@@ -12,7 +13,8 @@ const features = [
       "Maintain critical context in summaries",
       "Supports 15+ document formats"
     ],
-    exampleUseCase: "Instantly condense a 50-page research paper into key findings and conclusions while preserving technical details."
+    exampleUseCase: "Instantly condense a 50-page research paper into key findings and conclusions while preserving technical details.",
+    route: "/summarization"
   },
   {
     name: "Interactive Mind Maps",
@@ -24,7 +26,8 @@ const features = [
       "Drag-and-drop reorganization",
       "Export as image or PDF"
     ],
-    exampleUseCase: "Convert lecture notes into a color-coded knowledge graph showing connections between historical events."
+    exampleUseCase: "Convert lecture notes into a color-coded knowledge graph showing connections between historical events.",
+    route: "/mindmap"
   },
   {
     name: "Quiz Generation",
@@ -36,21 +39,23 @@ const features = [
       "Adaptive difficulty levels",
       "Performance analytics"
     ],
-    exampleUseCase: "Create a practice quiz from textbook chapters with questions weighted toward upcoming exam topics."
+    exampleUseCase: "Create a practice quiz from textbook chapters with questions weighted toward upcoming exam topics.",
+    route: "/quiz"
   },
   {
-    name: "Topic Clustering",
-    icon: "🔍",
-    description: "Our algorithm groups related concepts together, revealing hidden patterns in your material. Perfect for identifying core themes in research or organizing lecture notes.",
-    color: "from-emerald-400 to-teal-500",
-    keyBenefits: [
-      "Automatic concept grouping",
-      "Theme identification",
-      "Content organization tools"
+    "name": "Flash Cards",
+    "icon": "📖",
+    "description": "Enhance your learning with interactive flash cards, designed to help with memorization and quick recall of key concepts. Ideal for students and professionals alike.",
+    "color": "from-yellow-400 to-orange-500",
+    "keyBenefits": [
+      "Efficient memorization",
+      "Active recall technique",
+      "Customizable learning experience"
     ],
-    exampleUseCase: "Analyze research papers to identify emerging trends in renewable energy technologies."
+    "exampleUseCase": "Create flash cards to study medical terminology for an upcoming exam.",
+    "route": "/flashcards"
   },
-
+  
   {
     name: "Real-Time Processing",
     icon: "⚡",
@@ -61,7 +66,8 @@ const features = [
       "Live collaboration",
       "Version history"
     ],
-    exampleUseCase: "Collaborate with teammates on a shared document with real-time mind map updates during editing."
+    exampleUseCase: "Collaborate with teammates on a shared document with real-time mind map updates during editing.",
+    route: "/realtime"
   },
   {
     name: "Community Collaborative Study",
@@ -73,27 +79,28 @@ const features = [
       "Real-time chat",
       "Collaborative annotation"
     ],
-    exampleUseCase: "Organize a virtual study group with classmates to prepare for final exams through shared resources."
+    exampleUseCase: "Organize a virtual study group with classmates to prepare for final exams through shared resources.",
+    route: "/community"
   }
 ];
-
-const handleLogout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  navigate('/');
-};
 
 const Dashboard = ({ userName }) => {
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [isHovering, setIsHovering] = useState(null);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/');
+  };
 
   const handleTryFeature = (feature) => {
-    // Implement routing logic here
-    console.log(`Navigating to ${feature.name} feature`);
+    navigate(feature.route);
   };
 
   return (
-    <div className="flex h-screen py-16 bg-midnight-900 text-gray-100 overflow-hidden">
+    <div className="flex h-screen bg-midnight-900 text-gray-100 overflow-hidden">
       {/* Sidebar */}
       <motion.div 
         initial={{ x: -100, opacity: 0 }}
@@ -106,36 +113,49 @@ const Dashboard = ({ userName }) => {
           className="flex items-center space-x-3"
         >
           <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-xl">
-            🧠
+            �
           </div>
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">
             BrainVerse
           </h2>
         </motion.div>
 
-        <ul className="space-y-2 flex-1">
-          {features.map((feature, index) => (
-            <motion.li
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onMouseEnter={() => setIsHovering(index)}
-              onMouseLeave={() => setIsHovering(null)}
-              className={`p-3 cursor-pointer rounded-lg transition-all duration-300 flex items-center space-x-3 ${
-                selectedFeature?.name === feature.name 
-                  ? `bg-gradient-to-r ${feature.color} shadow-lg` 
-                  : "hover:bg-midnight-700"
-              }`}
-              onClick={() => setSelectedFeature(feature)}
-            >
-              <span className="text-xl">{feature.icon}</span>
-              <span>{feature.name}</span>
-            </motion.li>
-          ))}
-        </ul>
+        <div className="flex-1">
+          <ul className="space-y-2">
+            {features.map((feature, index) => (
+              <motion.li
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onMouseEnter={() => setIsHovering(index)}
+                onMouseLeave={() => setIsHovering(null)}
+                className={`p-3 cursor-pointer rounded-lg transition-all duration-300 flex items-center space-x-3 ${
+                  selectedFeature?.name === feature.name 
+                    ? `bg-gradient-to-r ${feature.color} shadow-lg` 
+                    : "hover:bg-midnight-700"
+                }`}
+                onClick={() => setSelectedFeature(feature)}
+              >
+                <span className="text-xl">{feature.icon}</span>
+                <span>{feature.name}</span>
+              </motion.li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Logout Button */}
+        <motion.button
+          onClick={handleLogout}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="mt-auto p-3 rounded-lg bg-midnight-700 hover:bg-midnight-600 transition-colors duration-300 flex items-center space-x-2"
+        >
+          <span>👋</span>
+          <span>Logout</span>
+        </motion.button>
       </motion.div>
 
       {/* Main Content */}

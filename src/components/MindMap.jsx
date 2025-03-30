@@ -7,37 +7,41 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   addEdge,
-  Panel
+  Panel,
+  MarkerType
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Loader, Zap, FileText, Brain, Download, Share2, GitBranch, Info, Award, Sparkles } from "lucide-react";
+import { Loader, Zap, FileText, Brain, Download, Share2, GitBranch, Info, Award, Sparkles, Camera, Check } from "lucide-react";
+import axios from "axios";
+import { toPng } from 'html-to-image';
 
-// Particle animation system for neural network visualization
+// API config
+const API_URL = "http://localhost:3001";
+
+// Particle System matching Homepage
 const ParticleSystem = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(100)].map((_, i) => (
+      {[...Array(120)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full"
+          className="absolute rounded-full bg-blue-400/20"
           style={{
-            width: Math.random() * 3 + 1,
-            height: Math.random() * 3 + 1,
-            background: `rgba(${10 + Math.random() * 40}, ${120 + Math.random() * 70}, ${200 + Math.random() * 55}, ${0.2 + Math.random() * 0.6})`
+            width: Math.random() * 4 + 1,
+            height: Math.random() * 4 + 1,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
           }}
-          initial={{ 
-            x: Math.random() * window.innerWidth, 
-            y: Math.random() * window.innerHeight,
-            opacity: Math.random() * 0.5 + 0.1
-          }}
-          animate={{ 
+          animate={{
+            x: [0, (Math.random() - 0.5) * 40],
+            y: [0, (Math.random() - 0.5) * 40],
             opacity: [0.1, 0.5, 0.1],
-            scale: [1, 1.5, 1]
           }}
-          transition={{ 
-            duration: 3 + Math.random() * 7,
+          transition={{
+            duration: Math.random() * 10 + 5,
             repeat: Infinity,
-            repeatType: "reverse"
+            repeatType: "reverse",
+            delay: Math.random() * 5
           }}
         />
       ))}
@@ -45,17 +49,54 @@ const ParticleSystem = () => {
   );
 };
 
-// Enhanced neuron node with pulse effects
+// Updated connection line with curved paths that avoid overlapping
+const ConnectionLine = ({ fromX, fromY, toX, toY }) => {
+  // Calculate midpoint for the curve
+  const midX = (fromX + toX) / 2;
+  const midY = (fromY + toY) / 2;
+  
+  // Calculate perpendicular offset for the curve
+  const dx = toX - fromX;
+  const dy = toY - fromY;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  const curvature = Math.min(0.5, Math.max(0.2, 150 / distance));
+  const offsetX = -dy * curvature;
+  const offsetY = dx * curvature;
+  
+  return (
+    <g>
+      <path
+        fill="none"
+        stroke="#1d4ed8"
+        strokeWidth={2}
+        className="animate-pulse"
+        d={`M${fromX},${fromY} Q${midX + offsetX},${midY + offsetY} ${toX},${toY}`}
+      />
+      <circle
+        cx={toX}
+        cy={toY}
+        r={4}
+        fill="#1d4ed8"
+        className="animate-ping"
+      />
+    </g>
+  );
+};
+
+
+
 const CustomNode = ({ data }) => {
   const controls = useAnimation();
   
   useEffect(() => {
+    // Start with a visible scale and ensure completed animation
     controls.start({
-      scale: [0.8, 1.05, 1],
-      transition: { duration: 1.2, type: "spring", damping: 8 }
-    });
+      scale: 1,
+      opacity: 1,
+      transition: { duration: 0.5, type: "spring", damping: 8 }
+    }).catch(error => console.error("Animation error:", error));
     
-    // Pulse randomly
+    // Pulse randomly but with more controlled animation
     const interval = setInterval(() => {
       if (Math.random() > 0.7) {
         controls.start({
@@ -65,7 +106,7 @@ const CustomNode = ({ data }) => {
             "0 0 0px rgba(29, 78, 216, 0)"
           ],
           transition: { duration: 1.5 }
-        });
+        }).catch(error => console.error("Pulse animation error:", error));
       }
     }, 3000);
     
@@ -74,33 +115,45 @@ const CustomNode = ({ data }) => {
 
   return (
     <motion.div
-      initial={{ scale: 0 }}
+      // Start with a visible scale
+      initial={{ scale: 1, opacity: 0.9 }}
       animate={controls}
+      // Make hover state changes more subtle with explicit return to scale:1
       whileHover={{ 
-        scale: 1.1,
-        boxShadow: "0 0 20px rgba(29, 78, 216, 0.8)"
+        scale: 1.05,
+        boxShadow: "0 0 20px rgba(29, 78, 216, 0.8)",
+        zIndex: 10,
+        transition: { type: "spring", damping: 15, stiffness: 200 }
       }}
-      className="px-4 py-3 rounded-lg shadow-lg bg-gradient-to-br from-blue-950 to-indigo-950 border border-blue-700 backdrop-blur-sm"
+      // Add explicit hover end behavior to ensure return to original scale
+      onHoverEnd={() => {
+        controls.start({ 
+          scale: 1,
+          transition: { type: "spring", damping: 15, stiffness: 200 }
+        });
+      }}
+      // Updated to be rectangular (width 1.5x height)
+      className="px-4 py-3 rounded-lg shadow-lg bg-gradient-to-br from-blue-950 to-indigo-950 border border-blue-700 backdrop-blur-sm w-60 h-40 flex flex-col justify-center"
     >
-      <div className="font-medium text-blue-100">{data.label}</div>
+      <div className="font-medium text-blue-100 text-center">{data.label}</div>
       {data.description && (
         <motion.div 
-          initial={{ opacity: 0 }}
+          initial={{ opacity: 0.8 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-xs text-blue-300 mt-1"
+          transition={{ delay: 0.2, duration: 0.3 }}
+          className="text-xs text-blue-300 mt-2 text-center overflow-y-auto max-h-24"
         >
           {data.description}
         </motion.div>
       )}
       {data.importance > 0 && (
-        <div className="flex mt-2">
+        <div className="flex mt-2 justify-center">
           {[...Array(data.importance)].map((_, i) => (
             <motion.div 
               key={i}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.5 + (i * 0.1) }}
+              initial={{ scale: 0.7, opacity: 0.7 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3 + (i * 0.08), duration: 0.2 }}
               className="w-2 h-2 rounded-full bg-blue-400 mr-1"
             />
           ))}
@@ -110,7 +163,8 @@ const CustomNode = ({ data }) => {
   );
 };
 
-// Advanced neural connections
+
+// Advanced neural connections with arrows
 const connectionLineStyle = {
   stroke: '#1d4ed8',
   strokeWidth: 2,
@@ -120,10 +174,16 @@ const connectionLineStyle = {
 const edgeOptions = {
   animated: true,
   style: { 
-    stroke: '#1d4ed8', 
-    strokeWidth: 2
+    stroke: "url(#edge-gradient)",
+    strokeWidth: 2,
   },
-  type: 'smoothstep'
+  type: 'smoothstep',
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    color: '#8b5cf6', // Purple color from your scheme
+    width: 15,
+    height: 15
+  }
 };
 
 // Node types configuration
@@ -140,227 +200,256 @@ function MindMap() {
   const [fileName, setFileName] = useState("");
   const [showTutorial, setShowTutorial] = useState(true);
   const [processingStep, setProcessingStep] = useState(0);
-  const [mapComplexity, setMapComplexity] = useState("simple");
   const [showWinBadge, setShowWinBadge] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [downloadStatus, setDownloadStatus] = useState("");
   const progressInterval = useRef(null);
+  const reactFlowWrapper = useRef(null);
   
-  // Force-directed layout with physics simulation
+  // IMPROVED: High-quality hierarchical layout algorithm that prevents node overlap
   useEffect(() => {
-    if (nodes.length > 0) {
-      const timer = setTimeout(() => {
-        const centerX = window.innerWidth / 2 - 200;
-        const centerY = window.innerHeight / 2 - 200;
+    if (nodes.length > 0 && edges.length > 0) {
+      // Create maps for quick lookups
+      const nodeMap = new Map(nodes.map(node => [node.id, { ...node }]));
+      const childrenMap = new Map();
+      
+      // Initialize children map for each node
+      nodes.forEach(node => childrenMap.set(node.id, []));
+      
+      // Populate children map based on edges
+      edges.forEach(edge => {
+        const sourceId = edge.source;
+        const targetId = edge.target;
         
-        // Apply different layouts based on complexity
-        let updatedNodes;
+        if (childrenMap.has(sourceId)) {
+          childrenMap.get(sourceId).push(targetId);
+        }
+      });
+      
+      // Identify root nodes (nodes with no incoming edges)
+      const nodeIds = new Set(nodes.map(node => node.id));
+      const targetIds = new Set(edges.map(edge => edge.target));
+      const rootIds = [...nodeIds].filter(id => !targetIds.has(id));
+      
+      // Use the first root, or first node if no clear root
+      const rootId = rootIds.length > 0 ? rootIds[0] : nodes[0].id;
+      
+      // Calculate the tree structure with proper levels and node counts
+      const nodeLevels = new Map();
+      const levelNodes = new Map();
+      
+      // First pass: Calculate levels for each node using BFS
+      const assignLevels = (startNodeId) => {
+        // Initialize data structures
+        const queue = [];
+        const visited = new Set();
         
-        if (mapComplexity === "radial") {
-          // Radial layout
-          updatedNodes = nodes.map((node, index) => {
-            if (index === 0) {
-              return { ...node, position: { x: centerX, y: centerY } };
-            }
-            const angle = (index * (2 * Math.PI)) / (nodes.length - 1);
-            const radius = 220;
-            return {
-              ...node,
-              position: {
-                x: centerX + radius * Math.cos(angle),
-                y: centerY + radius * Math.sin(angle),
-              },
-            };
-          });
-        } else if (mapComplexity === "hierarchical") {
-          // Hierarchical layout
-          const levels = Math.ceil(Math.sqrt(nodes.length));
-          const nodesPerLevel = Math.ceil(nodes.length / levels);
+        // Start with the root node at level 0
+        queue.push({ id: startNodeId, level: 0 });
+        visited.add(startNodeId);
+        nodeLevels.set(startNodeId, 0);
+        
+        // Process nodes in breadth-first order
+        while (queue.length > 0) {
+          const { id, level } = queue.shift();
           
-          updatedNodes = nodes.map((node, index) => {
-            const level = Math.floor(index / nodesPerLevel);
-            const posInLevel = index % nodesPerLevel;
-            const levelWidth = nodesPerLevel * 180;
-            
-            return {
-              ...node,
-              position: {
-                x: centerX - levelWidth/2 + posInLevel * 180,
-                y: centerY - 200 + level * 150,
-              },
-            };
-          });
-        } else {
-          // Advanced spiral layout
-          updatedNodes = nodes.map((node, index) => {
-            if (index === 0) {
-              return { ...node, position: { x: centerX, y: centerY } };
+          // Make sure this level exists in our map
+          if (!levelNodes.has(level)) {
+            levelNodes.set(level, []);
+          }
+          
+          // Add the node to its level collection
+          levelNodes.get(level).push(id);
+          
+          // Process all children
+          const children = childrenMap.get(id) || [];
+          children.forEach(childId => {
+            if (!visited.has(childId)) {
+              visited.add(childId);
+              nodeLevels.set(childId, level + 1);
+              queue.push({ id: childId, level: level + 1 });
             }
-            const angle = (index * (2.6 * Math.PI)) / (nodes.length);
-            const radius = 150 + (index * 25); // Increasing radius for spiral effect
-            
-            return {
-              ...node,
-              position: {
-                x: centerX + radius * Math.cos(angle),
-                y: centerY + radius * Math.sin(angle),
-              },
-            };
           });
         }
-  
-        setNodes(updatedNodes);
-      }, 100);
-  
-      return () => clearTimeout(timer);
+        
+        // Process any disconnected nodes
+        nodes.forEach(node => {
+          if (!visited.has(node.id)) {
+            const level = 0; // Default level for disconnected nodes
+            
+            if (!levelNodes.has(level)) {
+              levelNodes.set(level, []);
+            }
+            levelNodes.get(level).push(node.id);
+            nodeLevels.set(node.id, level);
+          }
+        });
+      };
+      
+      // Run the level assignment algorithm
+      assignLevels(rootId);
+      
+      // Get the maximum level depth
+      const maxLevel = Math.max(...Array.from(nodeLevels.values()));
+      
+      // Calculate positions for each node based on its level
+      const updatedNodes = [...nodes];
+      
+      // Constants for layout calculations - Updated for rectangular nodes
+      const NODE_WIDTH = 240; // Width 1.5x height (w-60 = 240px)
+      const NODE_HEIGHT = 160; // h-40 = 160px
+      const LEVEL_VERTICAL_SPACING = 240; // Increased vertical spacing between levels
+      const HORIZONTAL_PADDING = 150; // Increased horizontal padding
+      const NODE_HORIZONTAL_SPACING = 80; // Additional spacing between nodes horizontally
+      const VERTICAL_STAGGER_AMOUNT = 60; // Amount to stagger nodes vertically
+      const LEVEL_HORIZONTAL_SPACING = NODE_WIDTH * 1.5;
+      const NODE_STAGGER_HORIZONTAL = 60; 
+      
+      // Second pass: Position nodes by their level, preventing overlap and adding staggering
+      for (let level = 0; level <= maxLevel; level++) {
+        const nodesInLevel = levelNodes.get(level) || [];
+        const numNodesInLevel = nodesInLevel.length;
+        
+        // Calculate the total width needed for this level
+        const totalLevelWidth = Math.max(
+          window.innerWidth - (HORIZONTAL_PADDING * 2),
+          numNodesInLevel * NODE_WIDTH + (numNodesInLevel - 1) * NODE_HORIZONTAL_SPACING
+        );
+        
+        // Position each node in this level with staggering
+        nodesInLevel.forEach((nodeId, index) => {
+          const nodeIndex = updatedNodes.findIndex(node => node.id === nodeId);
+          if (nodeIndex !== -1) {
+            // Calculate X position with proper spacing
+            const segmentWidth = totalLevelWidth / numNodesInLevel;
+            const xPos = HORIZONTAL_PADDING + (segmentWidth * (index + 0.5)) - (NODE_WIDTH / 2);
+            
+            // Calculate Y position based on level with staggering
+            // Alternate nodes up and down from the base Y position
+            const baseYPos = 100 + (level * LEVEL_VERTICAL_SPACING);
+            const staggerOffset = index % 2 === 0 ? -VERTICAL_STAGGER_AMOUNT : VERTICAL_STAGGER_AMOUNT;
+            const yPos = baseYPos + staggerOffset;
+            
+            // Update node position
+            updatedNodes[nodeIndex] = {
+              ...updatedNodes[nodeIndex],
+              position: { x: xPos, y: yPos }
+            };
+          }
+        });
+      }
+      
+      // Apply the final positions to all nodes
+      setNodes(updatedNodes);
     }
-  }, [nodes.length, setNodes, mapComplexity]); 
+  }, [nodes.length, edges.length, setNodes]);
 
-  // Connection handler with improved animation
   const onConnect = useCallback((params) => {
     setEdges((eds) => addEdge({
       ...params,
       ...edgeOptions,
-      type: 'smoothstep',
+      // Ensure edges are spaced using updated type and curvature
+      type: 'default',
+      curvature: 0.4 + (Math.random() * 0.2), // Add slight randomness to curvature
       animated: true
     }, eds));
   }, [setEdges]);
 
-  // Advanced mind map generation with NLP simulation
+  // Export mind map as image
+  const exportToImage = () => {
+    if (reactFlowWrapper.current === null) {
+      setErrorMessage("Cannot export - flow container not found.");
+      return;
+    }
+    
+    setDownloadStatus("processing");
+    
+    // Find the actual ReactFlow element
+    const flowElement = reactFlowWrapper.current.querySelector('.react-flow');
+    
+    if (!flowElement) {
+      setErrorMessage("Cannot export - ReactFlow element not found.");
+      setDownloadStatus("");
+      return;
+    }
+    
+    // Add export animation
+    setTimeout(() => {
+      toPng(flowElement, {
+        backgroundColor: "#020b27", // Deep midnight blue
+        quality: 1,
+        pixelRatio: 2,
+        style: {
+          width: '100%',
+          height: '100%'
+        }
+      })
+        .then((dataUrl) => {
+          const link = document.createElement('a');
+          link.download = 'neural-mind-map.png';
+          link.href = dataUrl;
+          link.click();
+          setDownloadStatus("success");
+          
+          // Reset success status after 2 seconds
+          setTimeout(() => {
+            setDownloadStatus("");
+          }, 2000);
+        })
+        .catch((error) => {
+          console.error('Error exporting mind map:', error);
+          setErrorMessage("Failed to export image. Please try again.");
+          setDownloadStatus("");
+        });
+    }, 500); // Small delay for better UX
+  };
+
+  // Advanced mind map generation with Gemini API
   const generateMindMap = async () => {
     if (!inputText.trim()) return;
     
     setIsLoading(true);
     setProcessingStep(1);
     startProgressSimulation();
+    setErrorMessage("");
     
     try {
-      // Simulate AI processing steps
+      // Call our backend API which uses Gemini
+      const response = await axios.post(`${API_URL}/api/generate-mind-map`, {
+        text: inputText
+      });
+      
+      // Increment processing steps with delays for user experience
       await new Promise(resolve => setTimeout(resolve, 800));
       setProcessingStep(2);
       await new Promise(resolve => setTimeout(resolve, 1000));
       setProcessingStep(3);
       await new Promise(resolve => setTimeout(resolve, 800));
       setProcessingStep(4);
-      await new Promise(resolve => setTimeout(resolve, 600));
       
-      // Parse input text with advanced NLP simulation
-      const lines = inputText.split('\n').filter(line => line.trim());
-      const rootText = lines[0] || "Central Concept";
+      // Get the response data
+      const { nodes: generatedNodes, edges: generatedEdges } = response.data;
       
-      // Create enhanced nodes with metadata
-      const newNodes = [];
+      // Enhance edges with arrows
+      const enhancedEdges = generatedEdges.map(edge => ({
+        ...edge,
+        ...edgeOptions,
+        id: `e${edge.source}-${edge.target}`, // Ensure unique ID
+      }));
       
-      // Root node
-      newNodes.push({
-        id: '1',
-        type: 'custom',
-        data: { 
-          label: rootText,
-          description: "Core concept",
-          importance: 5 // Highest importance
-        },
-        position: { x: 0, y: 0 }
-      });
-      
-      // Child nodes with extracted concepts and relationships
-      const childLines = lines.slice(1);
-      const childNodes = childLines.map((line, index) => {
-        // Extract description if line has a colon
-        let label = line;
-        let description = "";
-        let importance = Math.floor(Math.random() * 3) + 1; // Random importance 1-3
-        
-        if (line.includes(":")) {
-          const parts = line.split(":");
-          label = parts[0].trim();
-          description = parts[1].trim();
-        }
-        
-        // Apply keyword analysis (simulated)
-        if (label.toLowerCase().includes("key") || 
-            label.toLowerCase().includes("main") || 
-            label.toLowerCase().includes("important")) {
-          importance = 4; // Higher importance for key concepts
-        }
-        
-        return {
-          id: `${index + 2}`,
-          type: 'custom',
-          data: { 
-            label,
-            description,
-            importance
-          },
-          position: { x: 0, y: 0 }
-        };
-      });
-      
-      newNodes.push(...childNodes);
-      
-      // Create more interconnected relationships between nodes
-      let newEdges = [];
-      
-      // Connect all nodes to root
-      childNodes.forEach((node) => {
-        newEdges.push({
-          id: `e1-${node.id}`,
-          source: '1',
-          target: node.id,
-          animated: true,
-          style: { stroke: '#1d4ed8', strokeWidth: 2 }
-        });
-      });
-      
-      // Add some cross-connections between related concepts (simulated NLP)
-      for (let i = 0; i < childNodes.length; i++) {
-        for (let j = i + 1; j < childNodes.length; j++) {
-          const nodeA = childNodes[i];
-          const nodeB = childNodes[j];
-          
-          // Simulate semantic relationship detection
-          if (nodeA.data.label.toLowerCase().includes("data") && 
-              nodeB.data.label.toLowerCase().includes("data")) {
-            newEdges.push({
-              id: `e${nodeA.id}-${nodeB.id}`,
-              source: nodeA.id,
-              target: nodeB.id,
-              animated: true,
-              style: { 
-                stroke: '#3b82f6', 
-                strokeWidth: 1.5,
-                strokeDasharray: '3,3'
-              }
-            });
-          }
-          
-          // Random connections with low probability
-          if (Math.random() < 0.2) {
-            newEdges.push({
-              id: `e${nodeA.id}-${nodeB.id}`,
-              source: nodeA.id,
-              target: nodeB.id,
-              animated: Math.random() > 0.5,
-              style: { 
-                stroke: '#3b82f6', 
-                strokeWidth: 1.5,
-                strokeDasharray: '3,3'
-              }
-            });
-          }
-        }
-      }
-      
-      setNodes(newNodes);
-      setEdges(newEdges);
+      setNodes(generatedNodes);
+      setEdges(enhancedEdges);
       setShowTutorial(false);
       
       // Show winner badge after successful complex map generation
-      if (newNodes.length > 5) {
+      if (generatedNodes.length > 5) {
         setTimeout(() => setShowWinBadge(true), 1000);
         setTimeout(() => setShowWinBadge(false), 7000);
       }
     } catch (error) {
       console.error("Error generating mind map:", error);
+      setErrorMessage("Failed to generate mind map. Please try again.");
     } finally {
       setIsLoading(false);
       setProcessingStep(0);
@@ -369,47 +458,69 @@ function MindMap() {
     }
   };
 
-  // Enhanced document processing
-  const uploadPDF = async () => {
-    if (!selectedFile) return;
+  // Document processing with Gemini
+// Updated document processing function
+const uploadPDF = async () => {
+  if (!selectedFile) return;
+  
+  setIsLoading(true);
+  setProcessingStep(1);
+  startProgressSimulation();
+  setErrorMessage("");
+  
+  try {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    const response = await axios.post(`${API_URL}/api/process-document`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     
-    setIsLoading(true);
-    setProcessingStep(1);
-    startProgressSimulation();
+    // Increment processing steps with delays for user experience
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setProcessingStep(2);
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    setProcessingStep(3);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setProcessingStep(4);
     
-    try {
-      // Simulate multi-stage processing for realistic feedback
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setProcessingStep(2);
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      setProcessingStep(3);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setProcessingStep(4);
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Enhanced simulated extraction with document structure analysis
-      const simulatedText = `${fileName.replace(".pdf", "")} - Concept Map\n` +
-        `Core Theme: The primary focus of this document\n` +
-        `Key Finding: Critical discovery with significant implications\n` +
-        `Methodology: Approach used for analysis and investigation\n` +
-        `Data Sources: Information repositories and collection methods\n` +
-        `Analysis Framework: Theoretical model applied to interpretation\n` +
-        `Results: Outcomes and measurements from the investigation\n` +
-        `Implications: Broader impact and significance of findings\n` +
-        `Future Directions: Potential next steps and research opportunities`;
-      
-      setInputText(simulatedText);
-      setShowTutorial(false);
-      setMapComplexity("hierarchical");
-    } catch (error) {
-      console.error("Error processing document:", error);
-    } finally {
-      setIsLoading(false);
-      setProcessingStep(0);
-      stopProgressSimulation();
-      setProcessingProgress(0);
+    // Get the response data
+    const { text: extractedText, mindMap } = response.data;
+    
+    // Enhance edges with arrows
+    const enhancedEdges = mindMap.edges.map(edge => ({
+      ...edge,
+      ...edgeOptions
+    }));
+    
+    setInputText(extractedText);
+    setNodes(mindMap.nodes);
+    setEdges(enhancedEdges);
+    setShowTutorial(false);
+  } catch (error) {
+    console.error("Error processing document:", error);
+    
+    // Enhanced error handling
+    let errorMsg = "Failed to process document";
+    if (error.response) {
+      errorMsg = error.response.data.error || errorMsg;
+      if (error.response.data.details) {
+        errorMsg += `: ${error.response.data.details}`;
+      }
+    } else if (error.message) {
+      errorMsg = error.message;
     }
-  };
+    
+    setErrorMessage(errorMsg);
+  } finally {
+    setIsLoading(false);
+    setProcessingStep(0);
+    stopProgressSimulation();
+    setProcessingProgress(0);
+  }
+};
 
   // File selection handler
   const handleFileChange = (e) => {
@@ -420,13 +531,13 @@ function MindMap() {
     }
   };
   
-  // AI processing status messages
+  // AI processing status messages - updated for Gemini
   const getProcessingStatus = () => {
     switch(processingStep) {
-      case 1: return "Performing semantic analysis...";
-      case 2: return "Extracting conceptual relationships...";
-      case 3: return "Building neural network topology...";
-      case 4: return "Finalizing cognitive map...";
+      case 1: return "Initializing Gemini AI...";
+      case 2: return "Analyzing content relationships...";
+      case 3: return "Extracting concept hierarchy...";
+      case 4: return "Constructing neural map...";
       default: return "Processing...";
     }
   };
@@ -450,48 +561,7 @@ function MindMap() {
     }
   };
 
-  // Enhanced sample maps for quick demo
-  const loadSampleMap = (sample) => {
-    let sampleText = "";
-    
-    if (sample === 'ai') {
-      setMapComplexity("radial");
-      sampleText = "Artificial Intelligence Landscape\n" +
-        "Machine Learning: Algorithms that improve with experience\n" +
-        "Neural Networks: Computing systems inspired by brains\n" +
-        "Natural Language Processing: Human-computer text interaction\n" +
-        "Computer Vision: Systems that extract meaning from images\n" +
-        "Reinforcement Learning: Training through reward systems\n" +
-        "Generative AI: Creating new content from existing data\n" +
-        "AI Ethics: Responsible development frameworks\n" +
-        "Explainable AI: Making AI decisions understandable";
-    } else if (sample === 'quantum') {
-      setMapComplexity("hierarchical");
-      sampleText = "Quantum Computing Fundamentals\n" +
-        "Qubits: Quantum bits that can exist in superposition\n" +
-        "Quantum Gates: Operations on quantum states\n" +
-        "Quantum Entanglement: Correlated quantum states\n" +
-        "Quantum Algorithms: Shor's and Grover's algorithms\n" +
-        "Quantum Error Correction: Protecting quantum information\n" +
-        "Quantum Hardware: Physical implementations of quantum computers\n" +
-        "Quantum Supremacy: Demonstrating quantum advantage\n" +
-        "Quantum Applications: Cryptography, simulation, optimization";
-    } else if (sample === 'web3') {
-      setMapComplexity("simple");
-      sampleText = "Web3 Technology Stack\n" +
-        "Blockchain: Distributed ledger technology\n" +
-        "Smart Contracts: Self-executing code on blockchain\n" +
-        "Cryptocurrencies: Digital assets and tokens\n" +
-        "DeFi: Decentralized financial applications\n" +
-        "NFTs: Non-fungible tokens for digital ownership\n" +
-        "DAOs: Decentralized autonomous organizations\n" +
-        "dApps: Decentralized applications\n" +
-        "Web3 Infrastructure: Layer 1 and Layer 2 solutions";
-    }
-    
-    setInputText(sampleText);
-  };
-
+  
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -532,7 +602,7 @@ function MindMap() {
             >
               <span className="flex items-center">
                 <Brain className="mr-2 text-blue-400" />
-                Neural Mapper
+                Gemini Neural Mapper
               </span>
             </motion.h1>
             
@@ -540,7 +610,7 @@ function MindMap() {
               variants={itemVariants}
               className="text-blue-300 mt-2"
             >
-              Advanced cognitive visualization engine
+              Powered by Google Gemini 1.5 AI
             </motion.p>
           </div>
           
@@ -554,7 +624,7 @@ function MindMap() {
             >
               <span className="flex items-center">
                 <GitBranch className="w-3 h-3 mr-1" />
-                v2.5
+                v4.0
               </span>
             </motion.div>
             
@@ -572,10 +642,18 @@ function MindMap() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="flex items-center px-3 py-1 rounded-md bg-gradient-to-r from-blue-700 to-indigo-700 text-white text-sm"
-              onClick={() => {}}
+              onClick={exportToImage}
+              disabled={nodes.length === 0 || downloadStatus === "processing"}
             >
-              <Download className="w-4 h-4 mr-1" />
-              Export
+              {downloadStatus === "processing" ? (
+                <Loader className="w-4 h-4 mr-1 animate-spin" />
+              ) : downloadStatus === "success" ? (
+                <Check className="w-4 h-4 mr-1 text-green-300" />
+              ) : (
+                <Download className="w-4 h-4 mr-1" />
+              )}
+              {downloadStatus === "processing" ? "Exporting..." : 
+               downloadStatus === "success" ? "Downloaded" : "Export PNG"}
             </motion.button>
           </motion.div>
         </motion.header>
@@ -594,65 +672,21 @@ function MindMap() {
             >
               <h2 className="text-xl font-semibold mb-3 text-blue-400 flex items-center">
                 <Zap className="mr-2 h-5 w-5" />
-                Neural Input
+                Gemini Input
               </h2>
               
-              {/* Quick Templates */}
-              <div className="mb-3 flex flex-wrap gap-2">
-                <button 
-                  onClick={() => loadSampleMap('ai')}
-                  className="text-xs py-1 px-2 rounded bg-blue-900/50 text-blue-300 hover:bg-blue-800/50 transition-colors"
-                >
-                  AI Template
-                </button>
-                <button 
-                  onClick={() => loadSampleMap('quantum')}
-                  className="text-xs py-1 px-2 rounded bg-indigo-900/50 text-indigo-300 hover:bg-indigo-800/50 transition-colors"
-                >
-                  Quantum Computing
-                </button>
-                <button 
-                  onClick={() => loadSampleMap('web3')}
-                  className="text-xs py-1 px-2 rounded bg-violet-900/50 text-violet-300 hover:bg-violet-800/50 transition-colors"
-                >
-                  Web3
-                </button>
-              </div>
+            
               
-              {/* Layout Selector */}
+              {/* Enhanced Visualization Title */}
               <div className="mb-3">
-                <label className="block text-xs text-blue-400 mb-1">Neural Layout</label>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setMapComplexity('simple')}
-                    className={`text-xs py-1 px-2 rounded transition-colors ${
-                      mapComplexity === 'simple' 
-                        ? 'bg-blue-700/50 text-blue-200' 
-                        : 'bg-blue-950/50 text-blue-400 hover:bg-blue-900/50'
-                    }`}
-                  >
-                    Spiral
-                  </button>
-                  <button 
-                    onClick={() => setMapComplexity('radial')}
-                    className={`text-xs py-1 px-2 rounded transition-colors ${
-                      mapComplexity === 'radial' 
-                        ? 'bg-blue-700/50 text-blue-200' 
-                        : 'bg-blue-950/50 text-blue-400 hover:bg-blue-900/50'
-                    }`}
-                  >
-                    Radial
-                  </button>
-                  <button 
-                    onClick={() => setMapComplexity('hierarchical')}
-                    className={`text-xs py-1 px-2 rounded transition-colors ${
-                      mapComplexity === 'hierarchical' 
-                        ? 'bg-blue-700/50 text-blue-200' 
-                        : 'bg-blue-950/50 text-blue-400 hover:bg-blue-900/50'
-                    }`}
-                  >
-                    Hierarchical
-                  </button>
+                <label className="block text-sm font-medium text-blue-400">
+                  <span className="flex items-center">
+                    <Brain className="h-4 w-4 mr-1" />
+                    Advanced Hierarchical Visualization
+                  </span>
+                </label>
+                <div className="mt-1 text-xs text-blue-300">
+                  Optimized for complex data structures with automatic node positioning and image export
                 </div>
               </div>
               
@@ -661,13 +695,20 @@ function MindMap() {
                 <label className="block text-sm text-blue-400 mb-1">Map Content</label>
                 <div className="relative">
                   <textarea
-                    placeholder="Enter main concept on first line&#10;Subtopic 1: With optional description&#10;Subtopic 2: Another key idea&#10;..."
+                    placeholder="Enter any text you want to analyze and visualize as a mind map. Gemini AI will extract the key concepts and relationships."
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     className="w-full h-40 bg-blue-950/30 border border-blue-700/50 rounded-lg p-3 text-blue-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none placeholder-blue-700"
                   />
                   <div className="absolute inset-0 rounded-lg pointer-events-none bg-blue-500/5 opacity-0 peer-focus:opacity-100 transition-opacity" />
                 </div>
+                
+                {/* Error message display */}
+                {errorMessage && (
+                  <div className="mt-2 text-red-400 text-sm">
+                    {errorMessage}
+                  </div>
+                )}
                 
                 {/* Generate Button with Processing Visualization */}
                 <div className="mt-2 relative">
@@ -688,7 +729,7 @@ function MindMap() {
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Generate Neural Map
+                        Generate with Gemini
                       </>
                     )}
                   </motion.button>
@@ -697,167 +738,246 @@ function MindMap() {
                   {isLoading && (
                     <motion.div 
                       initial={{ width: 0 }}
-                      animate={{ width: `${processingProgress}%` }}
+                      animate={{ width: `${processingProgress}%`}}
                       className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-b-lg"
                     />
                   )}
                 </div>
+
               </div>
               
-              {/* Document Upload with Enhanced Visual Feedback */}
-              <div>
-                <label className="block text-sm text-blue-400 mb-1">Document Analysis</label>
-                <div className="border border-dashed border-blue-700/50 rounded-lg p-3 bg-blue-950/30 hover:bg-blue-900/20 transition duration-200 group">
-                  <input 
-                    type="file" 
-                    accept=".pdf,.docx,.txt" 
-                    onChange={handleFileChange}
-                    className="hidden" 
-                    id="pdf-upload"
-                  />
-                  <label 
-                    htmlFor="pdf-upload"
-                    className="cursor-pointer block text-center py-3 group-hover:text-blue-300 transition-colors"
-                  >
-                    {fileName ? (
-                      <div className="flex items-center justify-center">
-                        <FileText className="mr-2 h-5 w-5 text-blue-400" />
-                        <span className="text-blue-300">{fileName}</span>
-                      </div>
-                    ) : (
-                      <motion.div 
-                        className="flex flex-col items-center"
-                        initial={{ y: 0 }}
-                        animate={{ y: [0, -5, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        <FileText className="h-10 w-10 text-blue-700 mb-2 group-hover:text-blue-500 transition-colors" />
-                        <span className="text-blue-600">Upload document for analysis</span>
-                      </motion.div>
-                    )}
-                  </label>
-                </div>
+              {/* Document Processor UI */}
+              <motion.div
+                variants={itemVariants}
+                className="bg-blue-950/40 backdrop-blur-md rounded-xl p-4 shadow-lg border border-blue-800/50 mt-4"
+              >
+                <h2 className="text-lg font-semibold mb-3 text-blue-400 flex items-center">
+                  <FileText className="mr-2 h-5 w-5" />
+                  Document Processor
+                </h2>
                 
-                <div className="mt-2 relative">
-                  <motion.button 
-                    whileHover={{ scale: 1.02, boxShadow: "0 0 15px rgba(29, 78, 216, 0.5)" }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={uploadPDF} 
-                    disabled={isLoading || !selectedFile}
-                    className={`w-full py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center ${
-                      !selectedFile 
-                        ? 'bg-blue-900/30 text-blue-600 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-indigo-700 to-blue-700 hover:from-indigo-600 hover:to-blue-600 text-white'
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm text-blue-400">Upload document</label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      onChange={handleFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                      disabled={isLoading}
+                    />
+                    <div className="border-2 border-dashed border-blue-700/40 rounded-lg p-4 text-center hover:border-blue-600 transition-colors">
+                      {selectedFile ? (
+                        <div className="text-blue-300">
+                          <FileText className="h-6 w-6 mx-auto mb-2" />
+                          {fileName}
+                        </div>
+                      ) : (
+                        <div className="text-blue-500">
+                          <FileText className="h-6 w-6 mx-auto mb-2" />
+                          <span className="text-sm">Select PDF or document</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={uploadPDF}
+                    disabled={!selectedFile || isLoading}
+                    className={`bg-gradient-to-r from-blue-800 to-indigo-900 hover:from-blue-700 hover:to-indigo-800 text-white font-medium py-2 px-4 rounded-lg transition duration-200 mt-2 flex items-center justify-center ${
+                      !selectedFile ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                   >
                     {isLoading ? (
                       <>
                         <Loader className="animate-spin mr-2 h-4 w-4" />
-                        {getProcessingStatus()}
+                        Processing...
                       </>
                     ) : (
                       <>
-                        <FileText className="mr-2 h-4 w-4" />
-                        Extract & Analyze
+                        <Brain className="mr-2 h-4 w-4" />
+                        Process Document
                       </>
                     )}
-                  </motion.button>
-                  
-                  {/* Progress bar */}
-                  {isLoading && (
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${processingProgress}%` }}
-                      className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-indigo-400 to-blue-500 rounded-b-lg"
-                    />
-                  )}
+                  </button>
                 </div>
+              </motion.div>
+            </motion.div>
+            
+            {/* Information Panel */}
+            <motion.div
+              variants={itemVariants}
+              className="bg-blue-950/40 backdrop-blur-md rounded-xl p-4 shadow-lg border border-blue-800/50"
+            >
+              <h2 className="text-lg font-semibold mb-2 text-blue-400 flex items-center">
+                <Info className="mr-2 h-5 w-5" />
+                How It Works
+              </h2>
+              <ul className="space-y-2 text-sm text-blue-300">
+                <li className="flex items-start">
+                  <span className="text-blue-400 mr-2">1.</span>
+                  <span>Enter text or upload a document to analyze</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-400 mr-2">2.</span>
+                  <span>Gemini AI extracts key concepts and relationships</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-400 mr-2">3.</span>
+                  <span>View, interact, and download your neural mind map</span>
+                </li>
+              </ul>
+              <div className="mt-3 text-xs text-blue-400 flex items-center">
+                <Sparkles className="h-3 w-3 mr-1" />
+                <span>Powered by advanced neural network visualization</span>
               </div>
             </motion.div>
           </motion.div>
 
-          {/* Right Panel: Neural Network Visualization */}
-          <motion.div 
-            className="md:col-span-2 h-[600px] relative rounded-xl overflow-hidden border border-blue-800/50 bg-blue-950/40 backdrop-blur-md"
-            variants={itemVariants}
-          >
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              nodeTypes={nodeTypes}
-              connectionLineStyle={connectionLineStyle}
-              fitView
+          {/* Interactive Mind Map Area */}
+          <div className="md:col-span-2">
+            <div 
+              ref={reactFlowWrapper}
+              className="bg-blue-950/20 backdrop-blur-sm rounded-xl border border-blue-900/50 shadow-xl h-[650px] relative"
             >
-              <Background variant="dots" gap={24} size={1} color="#1e40af" />
-              <Controls className="bg-blue-900/50 rounded-lg overflow-hidden" />
-              <MiniMap 
-                nodeColor={(n) => n.data.importance ? 
-                  `rgba(29, 78, 216, ${0.2 + (n.data.importance * 0.15)})` : '#1e3a8a'}
-                maskColor="rgba(12, 22, 45, 0.5)"
-              />
-              <Panel position="top-right" className="flex gap-2 bg-transparent">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  className="px-3 py-1 text-xs bg-blue-900/50 text-blue-300 rounded-lg border border-blue-700/30"
-                  onClick={() => setNodes(nodes => nodes.map(node => ({
-                    ...node,
-                    position: {
-                      x: node.position.x + Math.random() * 40 - 20,
-                      y: node.position.y + Math.random() * 40 - 20
-                    }
-                  })))}
-                >
-                  🧠 Energize Nodes
-                </motion.button>
-              </Panel>
-            </ReactFlow>
-
-            <AnimatePresence>
-              {showTutorial && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center"
-                >
-                  <div className="bg-gradient-to-br from-blue-950 to-indigo-950 p-6 rounded-xl border border-blue-700/50 backdrop-blur-lg">
-                    <div className="inline-block mb-4 p-3 rounded-full bg-blue-900/30 border border-blue-700/50">
-                      <Info className="w-8 h-8 text-blue-500" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">Cognitive Canvas Ready</h3>
-                    <p className="text-blue-300 max-w-xs text-sm mb-4">
-                      Enter concepts or upload a document to begin neural mapping. 
-                      Connect ideas naturally and watch relationships emerge.
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                nodeTypes={nodeTypes}
+                connectionLineComponent={ConnectionLine}
+                connectionLineStyle={connectionLineStyle}
+                defaultEdgeOptions={edgeOptions}
+                fitView
+              >
+                <defs>
+                  <linearGradient id="edge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#3b82f6" />
+                    <stop offset="100%" stopColor="#8b5cf6" />
+                  </linearGradient>
+                  
+                  <marker
+                    id="react-flow__arrowclosed"
+                    viewBox="0 0 10 10"
+                    refX="8"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto"
+                  >
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b5cf6" />
+                  </marker>
+                </defs>
+                <Controls className="bg-blue-950/40 border border-blue-800/50 rounded-lg p-1" />
+                <MiniMap 
+                  style={{ 
+                    backgroundColor: 'rgba(10, 25, 80, 0.4)',
+                    borderRadius: '0.5rem',
+                    border: '1px solid rgba(29, 78, 216, 0.3)',
+                    maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 80%, transparent 100%)'
+                  }}
+                  nodeColor={(n) => {
+                    if (n.data?.importance > 3) return 'rgba(59, 130, 246, 0.8)';
+                    if (n.data?.importance > 1) return 'rgba(99, 102, 241, 0.6)';
+                    return 'rgba(29, 78, 216, 0.5)';
+                  }}
+                />
+                <Background 
+                  variant="dots" 
+                  gap={20} 
+                  size={1}
+                  color="rgba(59, 130, 246, 0.2)"
+                />
+                
+                {/* Camera Button */}
+                <Panel position="top-right">
+                  <motion.button
+                    initial={{ scale: 0.9, opacity: 0.8 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="flex items-center justify-center bg-blue-900/50 hover:bg-blue-800/70 text-blue-300 p-2 rounded-lg backdrop-blur-sm transition-colors"
+                    onClick={exportToImage}
+                    disabled={nodes.length === 0 || downloadStatus === "processing"}
+                  >
+                    {downloadStatus === "processing" ? (
+                      <Loader className="w-5 h-5 animate-spin" />
+                    ) : downloadStatus === "success" ? (
+                      <Check className="w-5 h-5 text-green-300" />
+                    ) : (
+                      <Camera className="w-5 h-5" />
+                    )}
+                  </motion.button>
+                </Panel>
+                
+                {/* Winner Badge */}
+                <AnimatePresence>
+                  {showWinBadge && (
+                    <Panel position="top-center">
+                      <motion.div
+                        initial={{ y: -50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -20, opacity: 0 }}
+                        transition={{ type: "spring", damping: 12 }}
+                        className="bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-lg shadow-xl flex items-center space-x-2 border border-indigo-400"
+                      >
+                        <Award className="h-5 w-5 text-yellow-300" />
+                        <span className="text-white font-medium">Excellent Map! Hackathon Ready!</span>
+                      </motion.div>
+                    </Panel>
+                  )}
+                </AnimatePresence>
+              </ReactFlow>
+              
+              {/* Tutorial Overlay */}
+              {showTutorial && nodes.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center bg-blue-950/50 backdrop-blur-sm">
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", damping: 15 }}
+                    className="bg-blue-900/90 rounded-xl p-6 max-w-md text-center shadow-2xl border border-blue-600/50"
+                  >
+                    <Brain className="h-12 w-12 mx-auto mb-4 text-blue-400" />
+                    <h3 className="text-xl font-bold text-blue-200 mb-2">Neural Mind Mapper</h3>
+                    <p className="text-blue-300 mb-4">
+                      Enter text or upload a document in the left panel to generate a mind map powered by Gemini AI. Visualize concepts as an interactive neural network!
                     </p>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      className="text-sm bg-blue-800/50 px-4 py-2 rounded-lg border border-blue-700/30"
-                      onClick={() => setShowTutorial(false)}
-                    >
-                      Start Mapping →
-                    </motion.button>
-                  </div>
-                </motion.div>
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+                      <motion.div 
+                        whileHover={{ scale: 1.05 }}
+                        className="bg-blue-800/50 rounded-lg p-3 border border-blue-700/50"
+                      >
+                        <Zap className="h-5 w-5 mx-auto mb-1 text-blue-400" />
+                        <p className="text-sm text-blue-300">AI-powered concept extraction</p>
+                      </motion.div>
+                      <motion.div 
+                        whileHover={{ scale: 1.05 }}
+                        className="bg-blue-800/50 rounded-lg p-3 border border-blue-700/50"
+                      >
+                        <Download className="h-5 w-5 mx-auto mb-1 text-blue-400" />
+                        <p className="text-sm text-blue-300">Export your mind maps</p>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                </div>
               )}
-
-              {showWinBadge && (
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  className="absolute top-4 right-4 bg-gradient-to-br from-green-600 to-emerald-500 px-4 py-2 rounded-full flex items-center shadow-lg"
-                >
-                  <Award className="w-5 h-5 mr-2" />
-                  <span className="text-sm font-medium">Neural Complexity Achieved!</span>
-                  <div className="ml-2 animate-pulse">🏆</div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+            </div>
+          </div>
         </div>
+        
+        {/* Footer with enhanced styling */}
+        <motion.footer 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="mt-8 text-center text-blue-400/80 text-sm"
+        >
+          <motion.div variants={itemVariants}>
+            Gemini Neural Mapper © 2025 — Built for the AI Innovation Hackathon
+          </motion.div>
+        </motion.footer>
       </div>
     </div>
   );

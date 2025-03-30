@@ -12,8 +12,9 @@ import Login from "./components/Login";
 import About from "./pages/About";
 import Dashboard from "./components/Dashboard";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import { ProtectedRoute } from './utils/ProtectedRoute';
+import { ProtectedRoute } from "./utils/ProtectedRoute";
 import Summarizer from "./components/Summarizer";
+import ContactPage from "./pages/contactPage";
 
 function App() {
   const [text, setText] = useState("");
@@ -21,15 +22,13 @@ function App() {
   const [mindMapData, setMindMapData] = useState({ nodes: [], links: [] });
   const [quizQuestions, setQuizQuestions] = useState([]);
 
-
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <Summarizer></Summarizer>
+      {/* <Summarizer></Summarizer> */}
       {/* Add padding to prevent overlapping */}
-      <div className="flex-grow pt-16 ">
-      <Routes>
+      <div className="flex-grow pt-24 ">
+        <Routes>
           <Route path="/" element={<HomePage />} />
           {/* <Route path="/summary" element={<Summary summary={summary} />} /> */}
           <Route path="/mindmap" element={<MindMap data={mindMapData} />} />
@@ -39,12 +38,18 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/about" element={<About />} />
-          <Route path="/privacypolicy" element={<PrivacyPolicy />} />
-          <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />        </Routes>
+          <Route path="/contactpage" element={<ContactPage />} />
+          <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
+          <Route path="/summarization" element={<Summarizer></Summarizer> } />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard userName="Arushi" ></Dashboard>
+              </ProtectedRoute>
+            }
+          />{" "}
+        </Routes>
       </div>
       <Footer />
     </div>
@@ -52,3 +57,6 @@ function App() {
 }
 
 export default App;
+
+//
+//

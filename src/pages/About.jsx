@@ -2,20 +2,22 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import arushi from '../assets/arushi.png'; 
 import soumil from '../assets/soumil.png'; 
+import sanyam from '../assets/sanyam.png';
+import aditya from '../assets/aditya.png' 
 
 const developers = [
   {
     name: "Arushi",
     role: "Team Leader and Frontend Developer",
     bio: "[Short bio about the developer's experience and contributions]",
-    image: {arushi}, // Placeholder image
+    image: arushi, // Placeholder image
     skills: ["React", "Express.Js", "Tailwind CSS"]
   },
   {
     name: "Soumil",
     role: "Frontend Developer",
     bio: "[Short bio about the developer's experience and contributions]",
-    image: {soumil}, // Placeholder image
+    image:soumil, // Placeholder image
     skills: ["React", "Tailwind CSS"]
   },
 
@@ -23,14 +25,14 @@ const developers = [
     name: "Sanyam",
     role: "Backend Engineer",
     bio: "[Short bio about the developer's experience and contributions]",
-    image: "/api/placeholder/100/100", // Placeholder image
+    image: sanyam, // Placeholder image
     skills: ["Node.js", "FastAPI", "MongoDB"]
   },
   {
     name: "Aditya",
     role: "AI Specialist",
     bio: "[Short bio about the developer's experience and contributions]",
-    image: "/api/placeholder/100/100", // Placeholder image
+    image: aditya, // Placeholder image
     skills: ["TensorFlow", "PyTorch", "NLP"]
   },
 ];

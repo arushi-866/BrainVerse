@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { ChevronDown, Brain, BookOpen, PenTool, Calendar, BarChart, Clock, Award } from "lucide-react";
 import { ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 
 const HomePage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [animateCount, setAnimateCount] = useState(0)
   const [activeTab, setActiveTab] = useState("students");
-  
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsVisible(true);
@@ -26,6 +27,10 @@ const HomePage = () => {
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleClick = () => {
+    navigate('/signup');
+  };
 
 
   return (
@@ -85,12 +90,12 @@ const HomePage = () => {
               </div>
               
               <div className="mt-10 flex flex-col sm:flex-row gap-4 relative z-20">
-                <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 px-8 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <button onClick={handleClick} className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 px-8 rounded-lg hover:from-blue-600  hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
                   <span className="flex items-center">
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
-                    Start Free Trial
+                     Get Started
                   </span>
                 </button>
                 {/* <button className="bg-transparent border-2 border-blue-400 text-blue-400 font-semibold py-3 px-8 rounded-lg hover:bg-blue-400 hover:text-gray-900 transition-all duration-300 transform hover:scale-105">
@@ -768,7 +773,7 @@ const HomePage = () => {
                   </li>
                 ))}
               </ul>
-              <button className="mt-8 relative overflow-hidden group">
+              <button  onClick={handleClick} className="mt-8 relative overflow-hidden group">
                 <span className="relative z-10 block bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300 ease-out shadow-lg">
                   Get Started as a Student
                 </span>

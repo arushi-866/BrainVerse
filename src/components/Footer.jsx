@@ -102,7 +102,7 @@ const Footer = () => {
               <span className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500" />
             </h3>
             <ul className="mt-6 space-y-3">
-              {["Home", "Features", "About", "Contact", "Privacy Policy"].map((link, index) => (
+              {["Home", "About", "Contact", "Privacy Policy"].map((link, index) => (
                 <li key={index} className="group">
                   <a 
                     href="#" 

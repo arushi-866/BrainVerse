@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Search, Bell, User, ChevronDown, LogOut, Settings, Menu, X } from 'lucide-react';
-import logo from '../assets/logo.png'; // Ensure correct path to your logo image
+import { Bell, User, ChevronDown, LogOut, Menu, X } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const [notifications, setNotifications] = useState(3); // Example notifications count
+  const [notifications, setNotifications] = useState(3);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,8 +19,23 @@ function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleLoginState = () => {
-    setIsLoggedIn(!isLoggedIn);
+  // Check authentication status when component mounts
+  useEffect(() => {
+    // Here you would typically check for a token in localStorage or context
+    const token = localStorage.getItem('authToken');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
+  const handleLogout = () => {
+    // Clear authentication token
+    localStorage.removeItem('authToken');
+    setIsLoggedIn(false);
+    setProfileOpen(false);
+    navigate('/signin');
   };
 
   const clearNotifications = () => {
@@ -36,34 +52,21 @@ function Navbar() {
     >
       <div className="container mx-auto flex items-center justify-between px-4">
         {/* Logo */}
-        <div className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center space-x-2">
           <img src={logo} alt="BrainVerse Logo" width="80" height="80" className='rounded-full'/>
           <span className="text-xl font-semibold text-white">
             Br<span className="text-blue-400">ai</span>n<span className="text-blue-400">Verse</span>
           </span>
-        </div>
+        </Link>
         
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-8">
-          <button className="text-gray-300 hover:text-blue-400 font-medium">Dashboard</button>
-          <button className="text-gray-300 hover:text-blue-400 font-medium">Studies</button>
-          <button className="text-gray-300 hover:text-blue-400 font-medium">Analytics</button>
-          <button className="text-gray-300 hover:text-blue-400 font-medium">Resources</button>
+          {isLoggedIn && (
+            <Link to="/dashboard" className="text-gray-300 hover:text-blue-400 font-medium">Dashboard</Link>
+          )}
           
           {/* Right Side */}
           <div className="flex items-center space-x-4">
-            {/* Search Bar */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                className="w-48 bg-gray-800 rounded-md py-2 pl-9 pr-4 focus:ring-1 focus:ring-blue-500 text-sm text-gray-200 placeholder-gray-400"
-              />
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-            </div>
-            
             {isLoggedIn ? (
               <>
                 {/* Notifications */}
@@ -90,7 +93,7 @@ function Navbar() {
                         <p className="text-sm font-medium text-gray-200">John Smith</p>
                         <p className="text-xs text-gray-400">john.smith@example.com</p>
                       </div>
-                      <button onClick={toggleLoginState} className="block w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                      <button onClick={handleLogout} className="block w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 text-left flex items-center">
                         <LogOut className="h-4 w-4 mr-3" /> Sign out
                       </button>
                     </div>
@@ -99,8 +102,8 @@ function Navbar() {
               </>
             ) : (
               <>
-                <button onClick={toggleLoginState} className="text-gray-300 hover:text-blue-400 font-medium px-4 py-2">Log In</button>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium">Get Started</button>
+                <button onClick={handleLogin} className="text-gray-300 hover:text-blue-400 font-medium px-4 py-2">Log In</button>
+                <Link to="/signup" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium">Get Started</Link>
               </>
             )}
           </div>
@@ -111,6 +114,23 @@ function Navbar() {
           {isOpen ? <X className="h-6 w-6 text-gray-300" /> : <Menu className="h-6 w-6 text-gray-300" />}
         </button>
       </div>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="md:hidden bg-gray-800 p-4">
+          {isLoggedIn ? (
+            <>
+              <Link to="/dashboard" className="block py-2 text-gray-300 hover:text-blue-400">Dashboard</Link>
+              <button onClick={handleLogout} className="block w-full text-left py-2 text-gray-300 hover:text-blue-400">Sign out</button>
+            </>
+          ) : (
+            <>
+              <button onClick={handleLogin} className="block w-full text-left py-2 text-gray-300 hover:text-blue-400">Log In</button>
+              <Link to="/signup" className="block py-2 text-gray-300 hover:text-blue-400">Get Started</Link>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Routes, Route } from "react-router-dom"; // Remove BrowserRouter from here
+import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import HomePage from "./components/HomePage";
@@ -10,9 +10,9 @@ import FlashCards from "./components/FlashCards";
 import Profile from "./components/Profile";
 import SignUp from "./components/SignUp";
 import Login from "./components/Login";
-import TextInput from "./components/TextInput";
 import About from "./pages/About";
 import Dashboard from "./components/Dashboard";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function App() {
   const [text, setText] = useState("");
@@ -44,42 +44,25 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <Dashboard></Dashboard>
+      {/* Add padding to prevent overlapping */}
+      <div className="flex-grow pt-16 ">
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/summary" element={<Summary summary={summary} />} />
-        <Route path="/mindmap" element={<MindMap data={mindMapData} />} />
-        <Route path="/quiz" element={<Quiz questions={quizQuestions} />} />
-        <Route path="/flashcards" element={<FlashCards />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/about" element={<About></About>}></Route>
-        <Route
-          path="/input"
-          element={
-            <div className="container mx-auto px-4 py-8">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-2xl font-bold mb-4">Input Your Study Material</h2>
-                <TextInput value={text} onChange={setText} />
-                <button
-                  onClick={processText}
-                  className="mt-4 w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
-                >
-                  Process Text
-                </button>
-              </div>
-            </div>
-          }
-        />
-      </Routes>
-      <Footer>
-        <Routes>
-          <Route path="/about" element={<About></About>}></Route>
+          <Route path="/" element={<HomePage text={text} setText={setText} processText={processText} />} />
+          <Route path="/summary" element={<Summary summary={summary} />} />
+          <Route path="/mindmap" element={<MindMap data={mindMapData} />} />
+          <Route path="/quiz" element={<Quiz questions={quizQuestions} />} />
+          <Route path="/flashcards" element={<FlashCards />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/privacypolicy" element={<PrivacyPolicy />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
-        </Footer>
+      </div>
+      <Footer />
     </div>
   );
 }

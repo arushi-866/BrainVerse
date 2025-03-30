@@ -1,50 +1,58 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const features = [
-  {
-    name: "AI-Powered Summarization",
-    icon: "📝",
-    description: "Transform lengthy documents into concise summaries using advanced natural language processing. Our AI identifies key points and maintains context while reducing content by up to 80%.",
-    color: "from-blue-400 to-indigo-500"
-  },
-  {
-    name: "Interactive Mind Maps",
-    icon: "🧠",
-    description: "Visualize complex information hierarchies with dynamic, interactive mind maps. Click to expand nodes, drag to reorganize concepts, and see relationships between ideas instantly.",
-    color: "from-purple-400 to-indigo-600"
-  },
-  {
-    name: "Quiz Generation",
-    icon: "❓",
-    description: "Automatically generate quizzes from your content with customizable question types (multiple choice, true/false, short answer). Adjust difficulty levels and question focus areas.",
-    color: "from-cyan-400 to-blue-500"
-  },
-  {
-    name: "Topic Clustering",
-    icon: "🔍",
-    description: "Our algorithm groups related concepts together, revealing hidden patterns in your material. Perfect for identifying core themes in research or organizing lecture notes.",
-    color: "from-emerald-400 to-teal-500"
-  },
-  {
-    name: "Customizable Quiz Difficulty",
-    icon: "⚙️",
-    description: "Tailor quiz questions to match your proficiency level. Our adaptive system learns from your responses to provide the optimal challenge level for effective learning.",
-    color: "from-amber-400 to-orange-500"
-  },
-  {
-    name: "Real-Time Processing",
-    icon: "⚡",
-    description: "Experience near-instantaneous analysis as you type. Watch summaries, mind maps, and quizzes update live with each keystroke for seamless workflow integration.",
-    color: "from-pink-400 to-rose-500"
-  },
-  {
-    name: "Interactive Dashboard",
-    icon: "📊",
-    description: "Your centralized learning hub with progress tracking, knowledge heatmaps, and personalized recommendations based on your learning patterns and quiz performance.",
-    color: "from-violet-400 to-purple-500"
-  }
-];
+
+  const features = [
+    {
+      name: "AI-Powered Summarization",
+      icon: "📝",
+      description: "Transform lengthy documents into concise summaries using advanced natural language processing. Our AI identifies key points and maintains context while reducing content by up to 80%.",
+      color: "from-blue-400 to-indigo-500"
+    },
+    {
+      name: "Interactive Mind Maps",
+      icon: "🧠",
+      description: "Visualize complex information hierarchies with dynamic, interactive mind maps. Click to expand nodes, drag to reorganize concepts, and see relationships between ideas instantly.",
+      color: "from-purple-400 to-indigo-600"
+    },
+    {
+      name: "Quiz Generation",
+      icon: "❓",
+      description: "Automatically generate quizzes from your content with customizable question types (multiple choice, true/false, short answer). Adjust difficulty levels and question focus areas.",
+      color: "from-cyan-400 to-blue-500"
+    },
+    {
+      name: "Topic Clustering",
+      icon: "🔍",
+      description: "Our algorithm groups related concepts together, revealing hidden patterns in your material. Perfect for identifying core themes in research or organizing lecture notes.",
+      color: "from-emerald-400 to-teal-500"
+    },
+    {
+      name: "Customizable Quiz Difficulty",
+      icon: "⚙️",
+      description: "Tailor quiz questions to match your proficiency level. Our adaptive system learns from your responses to provide the optimal challenge level for effective learning.",
+      color: "from-amber-400 to-orange-500"
+    },
+    {
+      name: "Real-Time Processing",
+      icon: "⚡",
+      description: "Experience near-instantaneous analysis as you type. Watch summaries, mind maps, and quizzes update live with each keystroke for seamless workflow integration.",
+      color: "from-pink-400 to-rose-500"
+    },
+    {
+      name: "Interactive Dashboard",
+      icon: "📊",
+      description: "Your centralized learning hub with progress tracking, knowledge heatmaps, and personalized recommendations based on your learning patterns and quiz performance.",
+      color: "from-violet-400 to-purple-500"
+    },
+    {
+      name: "Community Collaborative Study",
+      icon: "👥",
+      description: "Engage in shared learning with study groups, collaborative note-taking, and real-time discussions. Work together with peers to enhance understanding and retention.",
+      color: "from-green-400 to-blue-600"
+    }
+  ];
+
 
 const Dashboard = () => {
   const [selectedFeature, setSelectedFeature] = useState(features[0]);
@@ -62,7 +70,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="flex h-screen bg-midnight-900 text-gray-100 overflow-hidden">
+    <div className="flex h-screen py-16 bg-midnight-900 text-gray-100 overflow-hidden">
       {/* Sidebar */}
       <motion.div 
         initial={{ x: -100, opacity: 0 }}

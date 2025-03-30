@@ -1,23 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import arushi from '../assets/arushi.png'; 
+import soumil from '../assets/soumil.png'; 
 
 const developers = [
   {
-    name: "[Developer Name 1]",
-    role: "Frontend Developer",
+    name: "Arushi",
+    role: "Team Leader and Frontend Developer",
     bio: "[Short bio about the developer's experience and contributions]",
-    image: "/api/placeholder/100/100", // Placeholder image
-    skills: ["React", "TypeScript", "Tailwind CSS"]
+    image: {arushi}, // Placeholder image
+    skills: ["React", "Express.Js", "Tailwind CSS"]
   },
   {
-    name: "[Developer Name 2]",
+    name: "Soumil",
+    role: "Frontend Developer",
+    bio: "[Short bio about the developer's experience and contributions]",
+    image: {soumil}, // Placeholder image
+    skills: ["React", "Tailwind CSS"]
+  },
+
+  {
+    name: "Sanyam",
     role: "Backend Engineer",
     bio: "[Short bio about the developer's experience and contributions]",
     image: "/api/placeholder/100/100", // Placeholder image
     skills: ["Node.js", "FastAPI", "MongoDB"]
   },
   {
-    name: "[Developer Name 3]",
+    name: "Aditya",
     role: "AI Specialist",
     bio: "[Short bio about the developer's experience and contributions]",
     image: "/api/placeholder/100/100", // Placeholder image
@@ -105,7 +115,7 @@ const About = () => {
           className="text-center mb-12 pt-8"
         >
           <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
-            BrainVerse Neurolens
+            BrainVerse
           </h1>
           <motion.div
             initial={{ width: "0%" }}
@@ -214,7 +224,7 @@ const About = () => {
               >
                 <h3 className="text-xl font-semibold mb-3 text-blue-300">Deployment Architecture</h3>
                 <p className="mb-4 text-blue-100/80">
-                  BrainVerse Neurolens leverages Spheron's decentralized GPU network for high-performance 
+                  BrainVerse leverages Spheron's decentralized GPU network for high-performance 
                   AI processing, ensuring low-latency responses and scalability during peak usage.
                 </p>
                 <div className="bg-blue-900/50 p-4 rounded-lg">
@@ -273,7 +283,7 @@ const About = () => {
           transition={{ duration: 0.8, delay: 1 }}
           className="text-center text-blue-400/80 text-sm mt-12"
         >
-          <p>© {new Date().getFullYear()} BrainVerse Neurolens • Revolutionizing Study Methods with AI</p>
+          <p>© {new Date().getFullYear()} BrainVerse  • Revolutionizing Study Methods with AI</p>
         </motion.div>
       </div>
     </div>

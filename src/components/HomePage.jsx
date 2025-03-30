@@ -695,7 +695,7 @@ const HomePage = () => {
           className="absolute bottom-0 h-1  bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-500 ease-in-out rounded-t"
           style={{ 
             left: activeTab === "students" ? "5%" : activeTab === "teachers" ? "38%" : "72%",
-            width: "25%",
+            // width: "50%",
             boxShadow: "0 0 20px rgba(56, 189, 248, 0.6)"
           }}
         />
@@ -714,7 +714,7 @@ const HomePage = () => {
           )}
         </button>
         
-        <button 
+        {/* <button 
           className={`px-8 py-4 font-medium transition-all duration-300 relative ${
             activeTab === "teachers" 
               ? "text-cyan-300" 
@@ -740,7 +740,7 @@ const HomePage = () => {
           {activeTab === "institutions" && (
             <span className="absolute bottom-0 left-0 w-full h-full bg-blue-800/20 rounded-t-lg" />
           )}
-        </button>
+        </button> */}
       </div>
       
       {/* Tab content with animation */}
@@ -1013,12 +1013,12 @@ const HomePage = () => {
     <div className="text-center mb-16 transform transition-all duration-700 hover:scale-105">
       <h2 className="text-5xl font-bold text-blue-300 mb-6 tracking-tight">
         <span className="relative inline-block">
-         Testimonials
+         Student Testimonials
           <span className="absolute bottom-1 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 transition-transform duration-500 origin-left group-hover:scale-x-100"></span>
         </span>
       </h2>
       <p className="text-xl text-blue-200 max-w-3xl mx-auto leading-relaxed">
-        Don't just take our word for it. Here's what some of our satisfied clients have to say about working with us.
+        Hear from our students about their learning experiences and how our courses have helped them achieve their academic goals.
       </p>
     </div>
     
@@ -1028,26 +1028,30 @@ const HomePage = () => {
         <div className="flex items-center mb-6">
           <div className="relative mr-4">
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 animate-pulse"></div>
+            {/* Base64 encoded student image - Arjun */}
             <img 
-              src="/images/testimonial-1.jpg" 
-              alt="Sarah Johnson" 
+              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj48ZGVmcz48c3R5bGU+LmNscC0xe2NsaXAtcGF0aDp1cmwoI2NsaXAtcGF0aCk7fS5jbHMtMXtmaWxsOiNmNGFlNzM7fS5jbHMtMntmaWxsOiMzYTMzMzM7fS5jbHMtM3tmaWxsOiM1MDQ2NDY7fS5jbHMtNHtmaWxsOiM2ZDRjNDE7fS5jbHMtNXtmaWxsOiNmZmY7fS5jbHMtNntmaWxsOiMzNjM2MzY7fS5jbHMtN3tmaWxsOiM0MjhiY2E7fTwvc3R5bGU+PGNsaXBQYXRoIGlkPSJjbGlwLXBhdGgiPjxjaXJjbGUgY3g9IjYwIiBjeT0iNjAiIHI9IjYwIi8+PC9jbGlwUGF0aD48L2RlZnM+PHRpdGxlPnN0dWRlbnQtYXJqdW48L3RpdGxlPjxnIGNsYXNzPSJjbHAtMSI+PHJlY3QgY2xhc3M9ImNscy03IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIvPjxjaXJjbGUgY2xhc3M9ImNscy0xIiBjeD0iNjAiIGN5PSI1MCIgcj0iMzAiLz48cGF0aCBjbGFzcz0iY2xzLTQiIGQ9Ik05MCw1MEE0MCw0MCwwLDAsMSw1MCw5MEgzMEE2MCw2MCwwLDAsMCw5MCw1MFoiLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0zMCw5MEg5MHYyMEgzMFoiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0zMCwyMEg5MFY1MEgzMFoiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNSIgY3g9IjQ1IiBjeT0iNDAiIHI9IjUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNSIgY3g9Ijc1IiBjeT0iNDAiIHI9IjUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNiIgY3g9IjQ1IiBjeT0iNDAiIHI9IjIiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNiIgY3g9Ijc1IiBjeT0iNDAiIHI9IjIiLz48cGF0aCBjbGFzcz0iY2xzLTYiIGQ9Ik02MCw1MGMtNSwwLTEwLDQtMTAsNHM1LDQsMTAsNHMxMC00LDEwLTRTNjUsNTAsNjAsNTBaIi8+PHBhdGggY2xhc3M9ImNscy02IiBkPSJNMzUsNzBINTBjMCwwLDUtMTAsMTAtMTBzMTAsMTAsMTAsMTBoMTVjMCwwLTUtMTUtMTUtMjBINTBDNDAsNTUsMzUsNzAsMzUsNzBaIi8+PC9nPjwvc3ZnPg=="
+              alt="Arjun Sharma" 
               className="w-16 h-16 rounded-full object-cover relative z-10 p-1"
             />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-blue-300 group-hover:text-blue-200 transition-colors duration-300">Sarah Johnson</h3>
-            <p className="text-blue-400">CEO, TechStart</p>
+            <h3 className="font-bold text-lg text-blue-300 group-hover:text-blue-200 transition-colors duration-300">Arjun Sharma</h3>
+            <p className="text-blue-400">B.Tech Computer Science</p>
           </div>
         </div>
         <p className="text-gray-300 italic mb-6 leading-relaxed">
-          "Working with this team has been a game-changer for our business. Their attention to detail and commitment to quality is unmatched in the industry."
+          "The online learning platform has been incredibly helpful for my studies. The instructors are knowledgeable and the course material is comprehensive. I've improved my programming skills significantly."
         </p>
         <div className="flex text-yellow-300 transform transition-all duration-300 group-hover:scale-110 origin-left">
-          {[...Array(5)].map((_, i) => (
+          {[...Array(4)].map((_, i) => (
             <svg key={i} className="w-5 h-5 fill-current" viewBox="0 0 24 24">
               <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
             </svg>
           ))}
+          <svg className="w-5 h-5 text-gray-400 fill-current" viewBox="0 0 24 24">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          </svg>
         </div>
       </div>
       
@@ -1056,19 +1060,20 @@ const HomePage = () => {
         <div className="flex items-center mb-6">
           <div className="relative mr-4">
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 animate-pulse"></div>
+            {/* Base64 encoded student image - Priya */}
             <img 
-              src="/images/testimonial-2.jpg" 
-              alt="Michael Chen" 
+              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj48ZGVmcz48c3R5bGU+LmNscC0xe2NsaXAtcGF0aDp1cmwoI2NsaXAtcGF0aCk7fS5jbHMtMXtmaWxsOiNmNWJlODM7fS5jbHMtMntmaWxsOiMzYTMzMzM7fS5jbHMtM3tmaWxsOiNlZDU0OWQ7fS5jbHMtNHtmaWxsOiM2ZDRjNDE7fS5jbHMtNXtmaWxsOiNmZmY7fS5jbHMtNntmaWxsOiMzNjM2MzY7fS5jbHMtN3tmaWxsOiNmZjc4YmE7fS5jbHMtOHtmaWxsOiM5YzZkM2Q7fTwvc3R5bGU+PGNsaXBQYXRoIGlkPSJjbGlwLXBhdGgiPjxjaXJjbGUgY3g9IjYwIiBjeT0iNjAiIHI9IjYwIi8+PC9jbGlwUGF0aD48L2RlZnM+PHRpdGxlPnN0dWRlbnQtcHJpeWE8L3RpdGxlPjxnIGNsYXNzPSJjbHAtMSI+PHJlY3QgY2xhc3M9ImNscy03IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIvPjxjaXJjbGUgY2xhc3M9ImNscy0xIiBjeD0iNjAiIGN5PSI1MCIgcj0iMzAiLz48cGF0aCBjbGFzcz0iY2xzLTgiIGQ9Ik0zMCwyMEg5MFY1MEgzMFoiLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0zMCw5MEg5MHYyMEgzMFoiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNSIgY3g9IjQ1IiBjeT0iNDAiIHI9IjUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNSIgY3g9Ijc1IiBjeT0iNDAiIHI9IjUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNiIgY3g9IjQ1IiBjeT0iNDAiIHI9IjIiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNiIgY3g9Ijc1IiBjeT0iNDAiIHI9IjIiLz48cGF0aCBkPSJNNzUsNjBjMCw1LTUsOS0xNSw5UzQ1LDY1LDQ1LDYwczUtNSwxNS01Uzc1LDU1LDc1LDYwWiIvPjxwYXRoIGNsYXNzPSJjbHMtNSIgZD0iTTQ4LDU5YzAsMS4xLDUuNCwyLDEyLDJzMTItLjksMTItMi01LjQtMi0xMi0yUzQ4LDU3LjksNDgsNTlaIi8+PHBhdGggY2xhc3M9ImNscy0zIiBkPSJNNDAsNzBjMCwwLDEwLDEwLDIwLDEwczIwLTEwLDIwLTEwSDQwWiIvPjwvZz48L3N2Zz4="
+              alt="Priya Patel" 
               className="w-16 h-16 rounded-full object-cover relative z-10 p-1"
             />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-blue-300 group-hover:text-blue-200 transition-colors duration-300">Michael Chen</h3>
-            <p className="text-blue-400">Marketing Director, GrowthLabs</p>
+            <h3 className="font-bold text-lg text-blue-300 group-hover:text-blue-200 transition-colors duration-300">Priya Patel</h3>
+            <p className="text-blue-400">MSc Data Science</p>
           </div>
         </div>
         <p className="text-gray-300 italic mb-6 leading-relaxed">
-          "The results speak for themselves. Since implementing their solution, we've seen a 200% increase in user engagement and a significant boost in conversion rates."
+          "I've completed three courses on this platform and each one has been exceptional. The hands-on projects helped me apply what I learned and build a strong portfolio. I recently secured an internship thanks to these skills!"
         </p>
         <div className="flex text-yellow-300 transform transition-all duration-300 group-hover:scale-110 origin-left">
           {[...Array(5)].map((_, i) => (
@@ -1084,26 +1089,30 @@ const HomePage = () => {
         <div className="flex items-center mb-6">
           <div className="relative mr-4">
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 animate-pulse"></div>
+            {/* Base64 encoded student image - Rohit */}
             <img 
-              src="/images/testimonial-3.jpg" 
-              alt="Emma Rodriguez" 
+              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj48ZGVmcz48c3R5bGU+LmNscC0xe2NsaXAtcGF0aDp1cmwoI2NsaXAtcGF0aCk7fS5jbHMtMXtmaWxsOiNlOGE5NzE7fS5jbHMtMntmaWxsOiMzYTMzMzM7fS5jbHMtM3tmaWxsOiM1MzdhYTI7fS5jbHMtNHtmaWxsOiNmZmY7fS5jbHMtNXtmaWxsOiMzNjM2MzY7fS5jbHMtNntmaWxsOiM1YzRkNDQ7fS5jbHMtN3tmaWxsOiM3MDU0M2U7fS5jbHMtOHtmaWxsOiM1NjlkZDc7fTwvc3R5bGU+PGNsaXBQYXRoIGlkPSJjbGlwLXBhdGgiPjxjaXJjbGUgY3g9IjYwIiBjeT0iNjAiIHI9IjYwIi8+PC9jbGlwUGF0aD48L2RlZnM+PHRpdGxlPnN0dWRlbnQtcm9oaXQ8L3RpdGxlPjxnIGNsYXNzPSJjbHAtMSI+PHJlY3QgY2xhc3M9ImNscy04IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIvPjxjaXJjbGUgY2xhc3M9ImNscy0xIiBjeD0iNjAiIGN5PSI1MCIgcj0iMzAiLz48cGF0aCBjbGFzcz0iY2xzLTciIGQ9Ik0zMCwyMEg5MFY1MEgzMFoiLz48cGF0aCBjbGFzcz0iY2xzLTYiIGQ9Ik0zMCw3MEg5MFY0NUgzMFoiLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0zMCw5MEg5MHYyMEgzMFoiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjQ1IiBjeT0iNDAiIHI9IjUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9Ijc1IiBjeT0iNDAiIHI9IjUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNSIgY3g9IjQ1IiBjeT0iNDAiIHI9IjIiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNSIgY3g9Ijc1IiBjeT0iNDAiIHI9IjIiLz48cGF0aCBjbGFzcz0iY2xzLTUiIGQ9Ik03MCw1NWMwLDUtNSw5LTEwLDlzLTEwLTQtMTAtOXM1LTMsMTAtM1M3MCw1MCw3MCw1NVoiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik02MCw1NWMwLDUsMCwxNSwwLDE1aDEwYzAsMCwwLTEwLDAtMTVINjBaIi8+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNTAsNTVjMCw1LDAsMTUsMCwxNUg0MGMwLDAsMC0xMCwwLTE1SDUwWiIvPjxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTUzLDU0YzAsMS4xLDMuMSwyLDcsMnM3LS45LDctMi0zLjEtMi03LTJTNTMsNTIuOSw1Myw1NFoiLz48L2c+PC9zdmc+"
+              alt="Rohit Verma" 
               className="w-16 h-16 rounded-full object-cover relative z-10 p-1"
             />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-blue-300 group-hover:text-blue-200 transition-colors duration-300">Emma Rodriguez</h3>
-            <p className="text-blue-400">Founder, DesignFlow</p>
+            <h3 className="font-bold text-lg text-blue-300 group-hover:text-blue-200 transition-colors duration-300">Rohit Verma</h3>
+            <p className="text-blue-400">BBA Finance</p>
           </div>
         </div>
         <p className="text-gray-300 italic mb-6 leading-relaxed">
-          "I was impressed by how quickly they understood our unique needs and delivered a solution that exceeded our expectations. Their support team is incredibly responsive."
+          "The learning interface is user-friendly and the support from teaching assistants is prompt. I particularly enjoyed the interactive quizzes and discussion forums that enhanced my understanding of complex financial concepts."
         </p>
         <div className="flex text-yellow-300 transform transition-all duration-300 group-hover:scale-110 origin-left">
-          {[...Array(5)].map((_, i) => (
+          {[...Array(4)].map((_, i) => (
             <svg key={i} className="w-5 h-5 fill-current" viewBox="0 0 24 24">
               <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
             </svg>
           ))}
+          <svg className="w-5 h-5 text-gray-400 fill-current" viewBox="0 0 24 24">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          </svg>
         </div>
       </div>
     </div>
@@ -1151,8 +1160,6 @@ const HomePage = () => {
     }
   `}</style>
 </section>
-
-
       </div>
   );
 };

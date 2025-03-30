@@ -38,11 +38,11 @@ const ProfilePage = () => {
 
   // Enhanced user data
   const userData = {
-    name: "John Doe",
+    name: "Arushi",
     title: "AI Study Enthusiast",
     level: "Advanced",
-    memberSince: "Jan 2024",
-    streak: 42,
+    memberSince: "March 2025",
+    streak: 2,
     badges: ["AI Expert", "100 Days Streak", "Content Creator"],
     stats: {
       summaries: 24,
@@ -142,8 +142,8 @@ const ProfilePage = () => {
   // Loading screen with enhanced visual
   if (!isLoaded) {
     return (
-      <div className="max-w-4xl mx-auto p-6 flex flex-col items-center justify-center min-h-screen bg-[#0a1929]">
-        <div className="relative mb-8">
+      <div className="max-w-4xl w-{800px} mx-auto pt-20 flex flex-col items-center justify-center min-h-screen bg-[#0a1929]">
+        <div className="relative mb-8 pt-20">
           <motion.div
             animate={{ 
               scale: [1, 1.2, 1],
@@ -156,7 +156,7 @@ const ProfilePage = () => {
             }}
             className="absolute -inset-8 rounded-full opacity-30 bg-gradient-to-r from-blue-600 to-purple-600 blur-xl"
           />
-          <Moon className="w-16 h-16 text-blue-400 relative z-10" />
+          <Moon className="w-16 h-20 text-blue-400 relative z-10" />
         </div>
         <h2 className="text-2xl font-bold mb-6 text-white">Loading Profile</h2>
         <div className="w-full max-w-md relative">
@@ -175,10 +175,10 @@ const ProfilePage = () => {
 
   return (
     <motion.div 
-      className="max-w-4xl mx-auto p-6 pb-24 bg-[#0a1929] text-gray-100 min-h-screen"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
+    className="max-w-4xl mx-auto p-6 pb-24 bg-[#0a1929] text-gray-100 min-h-screen"
+    initial="hidden"
+    animate="visible"
+    variants={containerVariants}
     >
       {/* Hero Section with enhanced styling */}
       <motion.div variants={itemVariants}>

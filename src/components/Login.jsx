@@ -29,53 +29,40 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Simulated loading for better UI feedback
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Simulated loading for better UI feedback (reduced to 500ms)
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      const response = await axios.post('http://localhost:2006/api/auth/login', {
+      const response = await axios.post('http://localhost:3001/api/auth/login', {
         email: formData.email,
         password: formData.password
       });
 
-      if (response.data.success) {
-        setSuccess('Login successful! Redirecting...');
-        
-        // Add timestamp to track login time
-        const userData = {
-          ...response.data.user,
-          loginTimestamp: new Date().toISOString(),
-          // Make sure hasCompletedRegistration is explicitly boolean
-          hasCompletedRegistration: response.data.user.hasCompletedRegistration === true
-        };
-        
-        // Store full user data and token
+      // Store user data and token first before any UI updates
+      if (response.data && response.data.token) {
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(userData));
         
-        // Delay navigation for animation effect
-        setTimeout(() => {
-          // Redirect based on user role and registration status
-          switch(response.data.user.role) {
-            case 'admin':
-              navigate('/admin');
-              break;
-            case 'doctor':
-              navigate('/doctor/dashboard');
-              break;
-            default:
-              // For regular users, check registration completion status
-              if (userData.hasCompletedRegistration !== true) {
-                navigate('/dashboard');
-              } else {
-                navigate('/dashboard');
-              }
-          }
-        }, 1200);
+        if (response.data.user) {
+          const userData = {
+            ...response.data.user,
+            loginTimestamp: new Date().toISOString(),
+            hasCompletedRegistration: Boolean(response.data.user.hasCompletedRegistration)
+          };
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
+        
+        // Show brief success message
+        setSuccess('Login successful!');
+        
+        // Navigate directly to dashboard
+        // Important: We're not waiting for any animations or timeouts
+        navigate('/dashboard');
+      } else {
+        // Handle case where response doesn't contain expected data
+        throw new Error('Invalid server response');
       }
     } catch (err) {
       console.error('Login error:', err);
       setError(err.response?.data?.message || 'Login failed. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -310,38 +297,6 @@ const Login = () => {
                         </svg>
                       </div>
                       <p className="text-[#64FFDA] mt-3 font-medium">Authenticating...</p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <AnimatePresence>
-                {success && (
-                  <motion.div 
-                    className="absolute inset-0 flex items-center justify-center bg-[#0A192F]/90 backdrop-blur-md z-20 rounded-xl"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <div className="text-center px-6">
-                      <motion.div 
-                        className="inline-block w-16 h-16 rounded-full bg-[#64FFDA]/20 flex items-center justify-center mb-4"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 200 }}
-                      >
-                        <svg className="w-8 h-8 text-[#64FFDA]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                      </motion.div>
-                      <motion.p 
-                        className="text-[#64FFDA] text-xl font-medium"
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        {success}
-                      </motion.p>
                     </div>
                   </motion.div>
                 )}

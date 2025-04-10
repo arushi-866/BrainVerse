@@ -7,53 +7,32 @@ const SignUp = () => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+ 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
-    dob: ''
   });
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
   // Assess password strength
-  // useEffect(() => {
-  //   if (!formData.password) {
-  //     setPasswordStrength(0);
-  //     return;
-  //   }
-
-  //   const registerUser = async () => {
-  //     try {
-  //       const response = await axios.post("http://localhost:5000/api/signup", {
-  //         username: "testuser",
-  //         email: "test@example.com",
-  //         password: "password123",
-  //       });
-
-  //       if (response?.data?.user) {
-  //         localStorage.setItem("user", JSON.stringify(response.data.user));
-  //         navigate("/dashboard");
-  //       } else {
-  //         console.error("Unexpected response format:", response);
-  //       }
-  //     } catch (error) {
-  //       console.error("Signup failed:", error.response ? error.response.data : error.message);
-  //     }
-  //   };
-
-  //   registerUser();
-  // }, [formData.password, navigate]);
+  useEffect(() => {
+    if (!formData.password) {
+      setPasswordStrength(0);
+      return;
+    }
     
-  //   let strength = 0;
-  //   if (formData.password.length >= 8) strength += 1;
-  //   if (/[A-Z]/.test(formData.password)) strength += 1;
-  //   if (/[0-9]/.test(formData.password)) strength += 1;
-  //   if (/[^A-Za-z0-9]/.test(formData.password)) strength += 1;
+    let strength = 0;
+    if (formData.password.length >= 6) strength += 1;
+    if (/[A-Z]/.test(formData.password)) strength += 1;
+    if (/[0-9]/.test(formData.password)) strength += 1;
+    if (/[^A-Za-z0-9]/.test(formData.password)) strength += 1;
     
-  // Remove the entire registerUser function from the useEffect
+    setPasswordStrength(strength);
+  }, [formData.password]);
+    
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -65,22 +44,31 @@ const SignUp = () => {
       setLoading(false);
       return;
     }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
   
     try {
-      const response = await axios.post('http://localhost:2006/api/auth/register', {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
-        email: formData.email.toLowerCase().trim(),
-        password: formData.password,
-        dob: formData.dob
-      });
+      const response = await axios.post(
+        "http://localhost:3001/api/auth/signup",
+        {
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+        }
+      );
+      
+      
   
-      if (response.data.success) {
+      if (response.data) {
         setShowSuccessAnimation(true);
         
-        // Store authentication data
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // Store authentication data (token is handled by cookies in the backend)
+        localStorage.setItem('user', JSON.stringify(response.data));
         
         setTimeout(() => {
           navigate('/dashboard');
@@ -97,11 +85,15 @@ const SignUp = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value
+    }));
   };
+  
+
+ 
 
   const inputClasses = `
     w-full text-sm px-4 py-3 bg-[#1a2133] border border-[#2a3654] rounded-lg
@@ -349,40 +341,26 @@ const SignUp = () => {
                     )}
                   </AnimatePresence>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <motion.div 
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.8 }}
-                    >
-                      <div className="relative">
-                        <input
-                          type="text"
-                          name="firstName"
-                          value={formData.firstName}
-                          onChange={handleChange}
-                          className={inputClasses}
-                          placeholder="First Name"
-                        />
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
+                        <i className="ri-user-line"></i>
                       </div>
-                    </motion.div>
-                    <motion.div 
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.8 }}
-                    >
-                      <div className="relative">
-                        <input
-                          type="text"
-                          name="lastName"
-                          value={formData.lastName}
-                          onChange={handleChange}
-                          className={inputClasses}
-                          placeholder="Last Name"
-                        />
-                      </div>
-                    </motion.div>
-                  </div>
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        className={`${inputClasses} pl-10`}
+                        placeholder="Full Name"
+                        required
+                      />
+                    </div>
+                  </motion.div>
 
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
@@ -407,26 +385,6 @@ const SignUp = () => {
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1 }}
-                    className="relative"
-                  >
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-                      <i className="ri-calendar-line"></i>
-                    </div>
-                    <input
-                      type="date"
-                      name="dob"
-                      value={formData.dob}
-                      onChange={handleChange}
-                      className={`${inputClasses} pl-10 cursor-pointer`}
-                      required
-                      max={new Date().toISOString().split('T')[0]}
-                    />
-                  </motion.div>
-
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.1 }}
                     className="space-y-2"
                   >
@@ -440,7 +398,7 @@ const SignUp = () => {
                         value={formData.password}
                         onChange={handleChange}
                         className={`${inputClasses} pl-10`}
-                        placeholder="Password"
+                        placeholder="Password (min. 6 characters)"
                         required
                       />
                     </div>

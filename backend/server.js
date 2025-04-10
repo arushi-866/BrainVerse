@@ -23,6 +23,17 @@ const storage = multer.diskStorage({
   }
 });
 
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
+
+app.use(express.json());
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
+
 const upload = multer({ 
   storage: storage,
   fileFilter: (req, file, cb) => {
@@ -46,7 +57,7 @@ const upload = multer({
 })();
 
 // Middleware
-app.use(cors());
+
 app.use(express.json());
 
 // Initialize Gemini API
@@ -616,3 +627,7 @@ app.post('/api/summarize-youtube', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+const connectDB = require('./config/db');
+
+connectDB();

@@ -27,7 +27,10 @@ function Navbar() {
   }, []);
 
   const handleLogin = () => {
-    navigate('/login');
+    // For testing purposes - simulate login
+    localStorage.setItem('authToken', 'test-token');
+    setIsLoggedIn(true);
+    // navigate('/login');
   };
 
   const handleLogout = () => {
@@ -35,7 +38,12 @@ function Navbar() {
     localStorage.removeItem('authToken');
     setIsLoggedIn(false);
     setProfileOpen(false);
-    navigate('/signin');
+    navigate('/login');
+  };
+
+  const navigateToProfile = () => {
+    navigate('/profile');
+    setProfileOpen(false);
   };
 
   const clearNotifications = () => {
@@ -69,36 +77,21 @@ function Navbar() {
           <div className="flex items-center space-x-4">
             {isLoggedIn ? (
               <>
-                {/* Notifications */}
-                <button className="relative p-2 rounded-md hover:bg-gray-800" onClick={clearNotifications}>
-                  <Bell className="h-5 w-5 text-gray-300" />
-                  {notifications > 0 && (
-                    <span className="absolute top-0 right-0 h-5 w-5 bg-blue-500 rounded-full text-xs flex items-center justify-center text-white">
-                      {notifications}
-                    </span>
-                  )}
-                </button>
+                {/* Profile Page Button */}
+                <Link 
+                  to="/profile" 
+                  className="text-gray-300 hover:text-blue-400 font-medium px-4 py-2 flex items-center"
+                >
+                  <User className="h-4 w-4 mr-2" /> Profile
+                </Link>
                 
-                {/* User Profile Dropdown */}
-                <div className="relative" onClick={(e) => e.stopPropagation()}>
-                  <button className="flex items-center space-x-2 p-1 rounded-md hover:bg-gray-800" onClick={() => setProfileOpen(!profileOpen)}>
-                    <User className="h-5 w-5 text-blue-400" />
-                    <span className="text-sm font-medium text-gray-200">John Smith</span>
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
-                  </button>
-                  
-                  {profileOpen && (
-                    <div className="absolute right-0 mt-2 w-64 bg-gray-800 rounded-md shadow-lg overflow-hidden border border-gray-700">
-                      <div className="p-4 border-b border-gray-700">
-                        <p className="text-sm font-medium text-gray-200">John Smith</p>
-                        <p className="text-xs text-gray-400">john.smith@example.com</p>
-                      </div>
-                      <button onClick={handleLogout} className="block w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 text-left flex items-center">
-                        <LogOut className="h-4 w-4 mr-3" /> Sign out
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {/* Logout Button */}
+                <button 
+                  onClick={handleLogout} 
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium flex items-center"
+                >
+                  <LogOut className="h-4 w-4 mr-2" /> Logout
+                </button>
               </>
             ) : (
               <>
@@ -121,7 +114,12 @@ function Navbar() {
           {isLoggedIn ? (
             <>
               <Link to="/dashboard" className="block py-2 text-gray-300 hover:text-blue-400">Dashboard</Link>
-              <button onClick={handleLogout} className="block w-full text-left py-2 text-gray-300 hover:text-blue-400">Sign out</button>
+              <Link to="/profile" className="block py-2 text-gray-300 hover:text-blue-400 flex items-center">
+                <User className="h-4 w-4 mr-2" /> Profile Page
+              </Link>
+              <button onClick={handleLogout} className="block w-full text-left py-2 text-red-400 hover:text-red-300 flex items-center">
+                <LogOut className="h-4 w-4 mr-2" /> Logout
+              </button>
             </>
           ) : (
             <>

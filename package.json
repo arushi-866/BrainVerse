@@ -26,14 +26,17 @@
     "mongoose": "^8.12.1",
     "morgan": "^1.10.0",
     "node-nlp": "^5.0.0-alpha.5",
+    "quill": "^2.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^9.8.0",
     "react-markdown": "^10.1.0",
+    "react-quill": "^2.0.0",
     "react-router-dom": "^6.30.0",
     "reactflow": "^11.11.4",
     "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "validator": "^13.12.0"
   },
   "scripts": {

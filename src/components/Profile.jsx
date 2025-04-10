@@ -175,7 +175,7 @@ const ProfilePage = () => {
 
   return (
     <motion.div 
-    className="max-w-4xl mx-auto p-6 pb-24 bg-[#0a1929] text-gray-100 min-h-screen"
+    className="max-w-8xl mx-auto p-6 pb-24 bg-[#0a1929] text-gray-100 min-h-screen"
     initial="hidden"
     animate="visible"
     variants={containerVariants}

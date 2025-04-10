@@ -16,6 +16,7 @@ import { ProtectedRoute } from "./utils/ProtectedRoute";
 import Summarizer from "./components/Summarizer";
 import ContactPage from "./pages/contactPage";
 import ChatAssistant from "./components/Chatbot/ChatAssistant";
+import CommunityPage from "./components/CommunityPage";
 
 function App() {
   const [text, setText] = useState("");
@@ -26,9 +27,9 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      
       {/* Add padding to prevent overlapping */}
       <div className="flex-grow pt-24 ">
+      {/* <CommunityPage></CommunityPage> */}
         <Routes>
           <Route path="/" element={<HomePage />} />
           {/* <Route path="/summary" element={<Summary summary={summary} />} /> */}
@@ -42,6 +43,7 @@ function App() {
           <Route path="/contactpage" element={<ContactPage />} />
           <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
           <Route path="/summarization" element={<Summarizer></Summarizer> } />
+          <Route path="/community" element={<CommunityPage></CommunityPage>} />
           <Route
             path="/dashboard"
             element={

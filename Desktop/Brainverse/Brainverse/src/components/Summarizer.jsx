@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { ChevronRight, FileText, Youtube, Copy, Download, FileDown, RefreshCw, Sparkles } from "lucide-react";
+import { ChevronRight, FileText, Youtube, Copy, Download, FileDown, RefreshCw, Sparkles} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
 
@@ -23,6 +23,12 @@ const Summarizer = () => {
   const fileInputRef = useRef(null);
   const summaryRef = useRef(null);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const userData = JSON.parse(localStorage.getItem("user"));
+  const userId = userData?.id;
+
+  const [summaryTitle, setSummaryTitle] = useState("");
+  const [summaryContent, setSummaryContent] = useState("");
+
 
   // Confetti effect
   useEffect(() => {
@@ -109,6 +115,8 @@ const Summarizer = () => {
       });
 
       setSummary(response.data.summary);
+      await saveSummaryToDB(file.name || "PDF Summary");
+
       setShowConfetti(true);
 
     } catch (error) {
@@ -154,6 +162,8 @@ const Summarizer = () => {
       });
 
       setSummary(summaryResponse.data.summary);
+      await saveSummaryToDB(videoInfo?.title || "YouTube Summary");
+
       setShowConfetti(true);
 
       // Update UI with detected language info
@@ -262,6 +272,34 @@ const Summarizer = () => {
     const secs = seconds % 60;
     return `${mins}m ${secs}s`;
   };
+
+  const saveSummaryToDB = async (title) => {
+    if (!userId || !title.trim()) {
+      console.warn("Missing user ID or title for summary");
+      return;
+    }
+  
+    const summary = {
+      id: Date.now(),
+      title: title.trim(),
+      date: new Date().toISOString().split("T")[0],
+      likes: 0,
+      comments: 0
+    };
+  
+    try {
+      await axios.post("http://localhost:3001/api/summaries/add-summary", {
+        userId,
+        summary
+      });
+  
+      console.log("Summary auto-saved!");
+    } catch (error) {
+      console.error("Error auto-saving summary:", error);
+    }
+  };
+  
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-indigo-950 to-slate-900 text-blue-100 p-6 flex flex-col items-center">

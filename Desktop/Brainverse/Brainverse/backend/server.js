@@ -14,6 +14,8 @@ const profileRoute = require('./routes/profile.js'); // Adjust path as needed
 const dataRoutes = require('./routes/data');
 const flashcardRoutes = require('./routes/flashcards');
 const quizRouter = require('./routes/quiz');
+const mindmapRouter = require('./routes/mindmap.js')
+const summariesRouter = require('./routes/summaries.js')
 
 const connectDB = require('./config/db');
 connectDB();
@@ -73,7 +75,7 @@ const upload = multer({
 app.use(express.json());
 
 // Initialize Gemini API
-const genAI = new GoogleGenerativeAI("AIzaSyCiBo09C70Oig-tgnwpJXR1pkS3ecLkznU");
+const genAI = new GoogleGenerativeAI("AIzaSyCnRDFKKF1IDvk4ytxb9eJIV6BrJZdLB2Y");
 
 // Function to extract text from PDF
 async function extractTextFromPdf(filePath) {
@@ -127,6 +129,7 @@ Rules:
 - Each node (except the root) must have one parent.
 - Each parent must have no more than 3 children unless strongly needed.
 - Structure should be 3–5 levels deep.
+- have atleast 12 nodes 
 - Optional: Use "relatedTo" to show cross-links.
 
     Input text: ${text}`;
@@ -211,6 +214,8 @@ Rules:
     throw new Error(`Gemini API error: ${error.message}`);
   }
 }
+
+
 
 async function processDocument(file) {
   let extractedText = '';
@@ -380,6 +385,8 @@ async function getTranscript(videoId, lang = "en") {
   }
 }
 
+app.use('/api/summaries', summariesRouter);
+
 // API Endpoint for generating mind map from text
 app.post('/api/generate-mind-map', async (req, res) => {
   try {
@@ -396,6 +403,8 @@ app.post('/api/generate-mind-map', async (req, res) => {
     res.status(500).json({ error: 'Failed to generate mind map' });
   }
 });
+
+app.use('/api/mindmap', mindmapRouter);
 
 // Updated API Endpoint for processing documents
 // Enhanced document processing endpoint

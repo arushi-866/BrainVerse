@@ -797,7 +797,7 @@ const ProfilePage = () => {
                             <motion.div
                               className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full"
                               initial={{ width: 0 }}
-                              animate={{ width: quiz.score / quiz.totalQuestions * 1200 }}
+                              animate={{ width: `${(quiz.score / quiz.totalQuestions) * 100}%` }}
                               transition={{ duration: 1, delay: 0.3 }}
                             />
                           </div>

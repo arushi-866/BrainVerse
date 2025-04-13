@@ -490,7 +490,7 @@ function MindMap() {
       })
         .then((dataUrl) => {
           const link = document.createElement('a');
-          link.download = 'neural-mind-map.png';
+          link.download = 'mind-map.png';
           link.href = dataUrl;
           link.click();
           setDownloadStatus("success");
@@ -732,7 +732,7 @@ function MindMap() {
             >
               <span className="flex items-center">
                 <Brain className="mr-2 text-blue-400" />
-                Gemini Neural Mapper
+                Generate your mind map
               </span>
             </motion.h1>
 
@@ -1071,9 +1071,9 @@ function MindMap() {
                     className="bg-blue-900/90 rounded-xl p-6 max-w-md text-center shadow-2xl border border-blue-600/50"
                   >
                     <Brain className="h-12 w-12 mx-auto mb-4 text-blue-400" />
-                    <h3 className="text-xl font-bold text-blue-200 mb-2">Neural Mind Mapper</h3>
+                    <h3 className="text-xl font-bold text-blue-200 mb-2">Mind Map</h3>
                     <p className="text-blue-300 mb-4">
-                      Enter text or upload a document in the left panel to generate a mind map powered by Gemini AI. Visualize concepts as an interactive neural network!
+                      Enter text or upload a document in the left panel to generate a mind map powered by Gemini AI. 
                     </p>
                     <div className="grid grid-cols-2 gap-3 mt-4">
                       <motion.div
@@ -1106,7 +1106,7 @@ function MindMap() {
           className="mt-8 text-center text-blue-400/80 text-sm"
         >
           <motion.div variants={itemVariants}>
-            Gemini Neural Mapper © 2025 — Built for the AI Innovation Hackathon
+           
           </motion.div>
         </motion.footer>
       </div>

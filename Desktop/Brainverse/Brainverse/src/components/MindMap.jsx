@@ -11,7 +11,7 @@ import ReactFlow, {
   MarkerType
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Loader, Zap, FileText, Brain, Download, Share2, GitBranch, Info, Award, Sparkles, Camera, Check } from "lucide-react";
+import { Loader, Zap, FileText, Brain, Download, Share2, GitBranch, Info, Award, Sparkles, Camera, Check, Save } from "lucide-react";
 import axios from "axios";
 import { toPng } from 'html-to-image';
 import { Handle, Position } from 'reactflow';
@@ -197,6 +197,37 @@ function MindMap() {
   const reactFlowWrapper = useRef(null);
   const fullscreenRef = useRef(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const userData = JSON.parse(localStorage.getItem("user"));
+  const userId = userData?.id;
+
+  const [inputTitle, setInputTitle] = useState("");
+  const [inputNodes, setInputNodes] = useState(0);
+
+  const saveMindMapToDB = async () => {
+    if (!userId || nodes.length === 0) {
+      alert("Missing user ID or empty mind map");
+      return;
+    }
+
+    try {
+      const mindMap = {
+        id: Date.now(),
+        title: inputText.slice(0, 50) || "Untitled Mind Map",
+        date: new Date().toISOString().split("T")[0],
+        nodes: nodes.length
+      };
+
+      await axios.post(`${API_URL}/api/mindmap/add-mindmap`, {
+        userId,
+        mindMap
+      });
+
+      alert("Mind map saved to your dashboard!");
+    } catch (error) {
+      console.error("Error saving mind map:", error);
+      alert("Failed to save mind map to database");
+    }
+  };
 
 
 
@@ -841,6 +872,16 @@ function MindMap() {
                     />
                   )}
                 </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={saveMindMapToDB}
+                  disabled={nodes.length === 0}
+                  className="w-full mt-2 bg-blue-800 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+                >
+                  <Save className="mr-2 inline-block h-4 w-4" />
+                  Save Mind Map
+                </motion.button>
 
               </div>
 

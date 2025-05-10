@@ -1,0 +1,164 @@
+\documentclass[border=10pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,shadows,arrows,decorations.markings,backgrounds}
+
+\begin{document}
+
+% Update the style definitions at the beginning of your document
+\tikzstyle{entity} = [rectangle, 
+                      draw=black, 
+                      fill=blue!20,
+                      thick,
+                      drop shadow={opacity=0.1},
+                      text centered, 
+                      minimum height=3em, 
+                      minimum width=8em,
+                      font=\sffamily\bfseries]
+
+\tikzstyle{attribute} = [ellipse, 
+                        draw=black, 
+                        fill=white,
+                        text centered, 
+                        minimum height=2em, 
+                        minimum width=7em,
+                        font=\small\sffamily]
+
+\tikzstyle{key-attribute} = [ellipse, 
+                            draw=black, 
+                            fill=gray!10,
+                            text centered, 
+                            minimum height=2em, 
+                            minimum width=7em,
+                            font=\small\sffamily\bfseries]
+
+\tikzstyle{relationship} = [diamond, 
+                           draw=black, 
+                           fill=orange!20,
+                           thick, 
+                           text centered,
+                           minimum height=2.5em, 
+                           minimum width=2.5em,
+                           font=\small\sffamily\bfseries]
+
+\tikzstyle{line} = [->, >=latex, thick]
+\tikzstyle{cardinality} = [font=\small\sffamily]
+
+\begin{tikzpicture}[node distance=10cm, 
+                    every node/.style={transform shape},
+                    background rectangle/.style={fill=white},
+                    show background rectangle]
+    
+    % Main entities with increased spacing
+    \node[entity] (user) at (0,0) {User};
+    \node[entity] (event) at (16,0) {Event};
+    \node[entity] (registration) at (8,-8) {Registration};
+    \node[entity] (feedback) at (0,-12) {Feedback};
+    \node[entity] (notification) at (16,-12) {Notification};
+
+    % User attributes with better spacing
+    \node[key-attribute] (userid) at (-3.5,2.5) {UserID (PK)};
+    \node[attribute] (username) at (0,3) {Name};
+    \node[attribute] (email) at (3.5,2.5) {Email};
+    \node[attribute] (password) at (-3.5,1) {Password};
+    \node[attribute] (role) at (0,1) {Role};
+    \node[attribute] (phone) at (-3.5,-1) {Phone};
+    \node[attribute] (address) at (3.5,-1) {Address};
+
+    % Event attributes with better spacing
+    \node[key-attribute] (eventid) at (12.5,2.5) {EventID (PK)};
+    \node[key-attribute] (organizerid) at (16,3) {OrganizerID (FK)};
+    \node[attribute] (eventname) at (19.5,2.5) {Name};
+    \node[attribute] (category) at (12.5,1) {Category};
+    \node[attribute] (datetime) at (16,1) {Date \& Time};
+    \node[attribute] (venue) at (19.5,1) {Venue};
+    \node[attribute] (maxpart) at (14,-1) {MaxParticipants};
+    \node[attribute] (status) at (18,-1) {Status};
+    \node[attribute] (bannerimage) at (16,-2) {BannerImage};  % Added missing attribute
+
+    % Registration attributes with improved spacing
+    \node[entity] (registration) at (8,-8) {Registration};
+    \node[key-attribute] (regid) at (5,-6.5) {RegistrationID (PK)};
+    \node[key-attribute] (reguserid) at (8,-6) {UserID (FK)};
+    \node[key-attribute] (regeventid) at (11,-6.5) {EventID (FK)};
+    \node[attribute] (regstatus) at (6,-9.5) {Status};
+    \node[attribute] (timestamp) at (10,-9.5) {Timestamp};
+
+    % Feedback attributes with better spacing
+    \node[key-attribute] (feedbackid) at (-3.5,-10) {FeedbackID (PK)};
+    \node[key-attribute] (feeduserid) at (-3.5,-11.5) {UserID (FK)};
+    \node[key-attribute] (feedeventid) at (-3.5,-13) {EventID (FK)};
+    \node[attribute] (rating) at (0,-10.5) {Rating};
+    \node[attribute] (comments) at (3.5,-10.5) {Comments};
+    \node[attribute] (feeddate) at (0,-13.5) {Date};
+
+    % Notification attributes with better spacing
+    \node[key-attribute] (notifid) at (12.5,-10) {NotificationID (PK)};
+    \node[key-attribute] (notifuserid) at (16,-10) {UserID (FK)};
+    \node[attribute] (message) at (19.5,-10) {Message};
+    \node[attribute] (type) at (14,-13) {Type};
+    \node[attribute] (notiftimestamp) at (18,-13) {Timestamp};
+
+    % Relationship diamonds with adjusted positions
+    \node[relationship] (organizes) at (8,0) {Organizes};
+    \node[relationship] (provides) at (0,-6) {Provides};
+    \node[relationship] (receives_f) at (8,-12) {Receives};
+    \node[relationship] (triggers) at (16,-6) {Triggers};
+    \node[relationship] (has_reg_u) at (4,-4) {Has};
+    \node[relationship] (has_reg_e) at (12,-4) {Has};
+
+    % Connection lines with cardinality
+    \draw[line] (user) -- node[above, sloped, pos=0.3] {1} (organizes) -- node[above, sloped, pos=0.7] {N} (event);
+    \draw[line] (user) -- node[left, pos=0.3] {1} (provides) -- node[left, pos=0.7] {N} (feedback);
+    \draw[line] (event) -- node[right, pos=0.3] {1} (receives_f) -- node[right, pos=0.7] {N} (feedback);
+    \draw[line] (event) -- node[right, pos=0.3] {1} (triggers) -- node[right, pos=0.7] {N} (notification);
+    \draw[line] (user) -- node[left, pos=0.3] {1} (has_reg_u) -- node[right, pos=0.7] {N} (registration);
+    \draw[line] (event) -- node[right, pos=0.3] {1} (has_reg_e) -- node[left, pos=0.7] {N} (registration);
+
+    % Connect attributes to entities with gray lines
+    \foreach \from/\to in {
+        user/userid, user/username, user/email, user/password, user/role, user/phone, user/address,
+        event/eventid, event/organizerid, event/eventname, event/category, event/datetime, event/venue, event/maxpart, event/status, event/bannerimage,
+        registration/regid, registration/reguserid, registration/regeventid, registration/regstatus, registration/timestamp,
+        feedback/feedbackid, feedback/feeduserid, feedback/feedeventid, feedback/rating, feedback/comments, feedback/feeddate,
+        notification/notifid, notification/notifuserid, notification/message, notification/type, notification/notiftimestamp
+    } {
+        \draw[gray] (\from) -- (\to);
+    }
+
+    % Update the Constraints box with matching style
+    % \node[draw=black, fill=white, rounded corners, thick, inner sep=10pt] at (-6,6) {
+    %     \begin{tabular}{l}
+    %         \textbf{Key Constraints:}\\[0.2cm]
+    %         1. MaxParticipants limit check\\
+    %         2. Registration status (Confirmed/Pending)\\
+    %         3. Unique UserID and EventID\\
+    %         4. Rating range (1-5)\\
+    %         5. Email/Phone format validation\\
+    %         6. Event time conflict check\\
+    %         7. Role-based access (Admin/Organizer/Student)
+    %     \end{tabular}
+    % };
+
+    % Update the Legend box with enhanced styling
+    % \node[draw=black, fill=white, rounded corners, thick, inner sep=10pt] at (20,6) {
+    %     \begin{tabular}{l}
+    %         \textbf{Legend:}\\[0.2cm]
+    %         \textcolor{blue!50!black}{Rectangle} = Entity\\
+    %         \textcolor{orange!50!black}{Diamond} = Relationship\\
+    %         \textcolor{black}{Ellipse} = Attribute\\
+    %         \textcolor{gray!50!black}{Shaded Ellipse} = Key\\[0.2cm]
+    %         \textbf{Keys:}\\
+    %         PK = Primary Key\\
+    %         FK = Foreign Key\\[0.2cm]
+    %         \textbf{Roles:}\\
+    %         • Admin\\
+    %         • Organizer\\
+    %         • Student\\[0.2cm]
+    %         \textbf{Cardinality:}\\
+    %         1:N = One-to-Many\\
+    %         N:M = Many-to-Many
+    %     \end{tabular}
+    % };
+
+\end{tikzpicture}
+\end{document}

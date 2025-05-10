@@ -1,0 +1,166 @@
+\documentclass[border=10pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,shadows,arrows,decorations.markings,backgrounds}
+
+\begin{document}
+
+% Define custom styles with colors and improved aesthetics
+\tikzstyle{entity} = [rectangle, 
+                      draw=black, 
+                      fill=blue!20,
+                      thick,
+                      drop shadow={opacity=0.1},
+                      text centered, 
+                      minimum height=3em, 
+                      minimum width=8em,
+                      font=\sffamily\bfseries]
+
+\tikzstyle{attribute} = [ellipse, 
+                        draw=black, 
+                        fill=white,
+                        text centered, 
+                        minimum height=2em, 
+                        minimum width=7em,
+                        font=\small\sffamily]
+
+\tikzstyle{key-attribute} = [ellipse, 
+                            draw=black, 
+                            fill=gray!10,
+                            text centered, 
+                            minimum height=2em, 
+                            minimum width=7em,
+                            font=\small\sffamily\bfseries]
+
+\tikzstyle{relationship} = [diamond, 
+                           draw=black, 
+                           fill=orange!20,
+                           thick, 
+                           text centered,
+                           minimum height=2.5em, 
+                           minimum width=2.5em,
+                           font=\small\sffamily\bfseries]
+
+\tikzstyle{line} = [->, >=latex, thick]
+\tikzstyle{cardinality} = [font=\small\sffamily]
+
+\begin{tikzpicture}[node distance=10cm, 
+                    every node/.style={transform shape},
+                    background rectangle/.style={fill=white},
+                    show background rectangle]
+    
+    % Main entities with increased spacing
+    \node[entity] (user) at (0,0) {User};
+    \node[entity] (product) at (14,0) {Product};
+    \node[entity] (order) at (0,-10) {Order};
+    \node[entity] (review) at (14,-10) {Review};
+    \node[entity] (payment) at (7,-14) {Payment};
+    \node[entity] (cart) at (7,6) {Cart};  % Moved higher
+    \node[entity] (shipping) at (-7,-14) {Shipping};
+
+    % User attributes with adjusted spacing
+    \node[key-attribute] (userid) at (-3.5,2) {UserID (PK)};
+    \node[attribute] (username) at (0,3) {Name};
+    \node[attribute] (email) at (3.5,2) {Email};
+    \node[attribute] (password) at (-3.5,0.5) {Password};
+    \node[attribute] (role) at (3.5,0.5) {Role};
+    \node[attribute] (phone) at (-2,-1.5) {Phone};
+    \node[attribute] (status) at (2,-1.5) {Status};
+    
+    % Product attributes with improved spacing
+    \node[key-attribute] (productid) at (10.5,2.5) {ProductID (PK)};
+    \node[attribute] (productname) at (14,3.5) {Name};
+    \node[attribute] (price) at (17.5,2.5) {Price};
+    \node[key-attribute] (artisanid) at (10.5,1) {ArtisanID (FK)};
+    \node[attribute] (stock) at (14,1) {Stock};
+    \node[attribute] (category) at (17.5,1) {Category};
+    \node[attribute] (createdat) at (14,-1) {CreatedAt};
+    
+    % Order attributes with adjusted spacing
+    \node[key-attribute] (orderid) at (-3.5,-8) {OrderID (PK)};
+    \node[attribute] (ordertotal) at (0,-8) {TotalPrice};
+    \node[attribute] (orderstatus) at (3.5,-8) {Status};
+    \node[attribute] (orderdate) at (-3.5,-11) {OrderDate};
+    \node[attribute] (paymentstatus) at (3.5,-11) {PaymentStatus};
+    
+    % Review attributes with adjusted spacing
+    \node[key-attribute] (reviewid) at (10.5,-8) {ReviewID (PK)};
+    \node[attribute] (rating) at (14,-8) {Rating};
+    \node[attribute] (comment) at (17.5,-8) {Comment};
+    \node[attribute] (reviewdate) at (14,-11) {Date};
+    
+    % Payment attributes with adjusted spacing - moved further apart
+    \node[entity] (payment) at (7,-14) {Payment};
+    \node[key-attribute] (paymentid) at (4,-13) {PaymentID (PK)};
+    \node[attribute] (amount) at (7,-12) {Amount};
+    \node[attribute] (paymentmethod) at (10,-13) {PaymentMethod};
+    \node[attribute] (paymentdate) at (7,-15) {PaymentDate};
+    
+    % Shipping attributes with adjusted spacing - moved further apart
+    \node[entity] (shipping) at (-7,-14) {Shipping};
+    \node[key-attribute] (shippingid) at (-10,-13) {ShippingID (PK)};
+    \node[attribute] (shipstatus) at (-7,-12) {ShippingStatus};
+    \node[attribute] (tracking) at (-4,-13) {TrackingNumber};
+    \node[attribute] (carrier) at (-7,-15) {Carrier};
+
+    % Cart entity and attributes with adjusted spacing
+    \node[key-attribute] (cartid) at (4,7) {CartID (PK)};
+    \node[attribute] (cartquantity) at (7,8) {Quantity};
+    \node[attribute] (dateadded) at (10,7) {DateAdded};
+
+    % Relationship diamonds
+    \node[relationship] (creates) at (7,0) {Creates};
+    \node[relationship] (places) at (0,-5) {Places};
+    \node[relationship] (writes) at (14,-5) {Writes};
+    \node[relationship] (has_payment) at (3.5,-12) {Has};
+    \node[relationship] (has_shipping) at (-3.5,-12) {Has};
+    \node[relationship] (owns) at (3.5,3) {Owns};  % Moved down
+    \node[relationship] (contains) at (10.5,4) {Contains};  % Moved higher
+    \node[relationship] (orderdetails) at (7,-10) {Order\\Details};
+
+    % Connection lines with cardinality
+    \draw[line] (user) -- node[above, sloped, pos=0.3] {1} (creates) -- node[above, sloped, pos=0.7] {N} (product);
+    \draw[line] (user) -- node[left, pos=0.3] {1} (places) -- node[left, pos=0.7] {N} (order);
+    \draw[line] (user) -- node[above, sloped, pos=0.3] {1} (writes) -- node[above, sloped, pos=0.7] {N} (review);
+    \draw[line] (order) -- node[above, sloped, pos=0.3] {1} (has_payment) -- node[above, sloped, pos=0.7] {1} (payment);
+    \draw[line] (order) -- node[above, sloped, pos=0.3] {1} (has_shipping) -- node[above, sloped, pos=0.7] {1} (shipping);
+    \draw[line] (user) to[bend left=45] node[above, sloped, pos=0.3] {1} (owns) 
+        to[bend left=45] node[above, sloped, pos=0.7] {N} (cart);
+    \draw[line] (product) to[bend right=35] node[above, sloped, pos=0.3] {1} (contains) 
+        to[bend right=35] node[above, sloped, pos=0.7] {N} (cart);
+    
+    % Many-to-Many relationship
+    \draw[line] (order) -- node[left, pos=0.4] {N} (orderdetails);
+    \draw[line] (product) -- node[right, pos=0.4] {N} (orderdetails);
+
+    % Connect attributes to entities with simple lines
+    \foreach \from/\to in {
+        user/userid, user/username, user/email, user/password, user/role, user/phone, user/status,
+        product/productid, product/productname, product/price, product/stock, product/category, product/artisanid, product/createdat,
+        order/orderid, order/ordertotal, order/orderstatus, order/orderdate, order/paymentstatus,
+        review/reviewid, review/rating, review/comment, review/reviewdate,
+        payment/paymentid, payment/amount, payment/paymentmethod, payment/paymentdate,
+        cart/cartid, cart/cartquantity, cart/dateadded,
+        shipping/shippingid, shipping/shipstatus, shipping/tracking, shipping/carrier
+    } {
+        \draw[gray] (\from) -- (\to);
+    }
+
+    % Legend with better styling
+    \node[draw=black, fill=white, rounded corners, thick, inner sep=10pt] at (-8,6) {
+        \begin{tabular}{l l}
+            \textbf{Legend:} & \\
+            \textcolor{blue!50!black}{Rectangle} & Entity \\
+            \textcolor{orange!50!black}{Diamond} & Relationship \\
+            Ellipse & Attribute \\
+            \textcolor{gray!50!black}{Shaded Ellipse} & Primary Key \\
+            \textbf{PK} = Primary Key & \\
+            \textbf{FK} = Foreign Key & \\[0.2cm]
+            \textbf{Cardinality:} & \\
+            1:N = One-to-Many & \\
+            N:M = Many-to-Many & \\
+            1:1 = One-to-One &
+        \end{tabular}
+    };
+
+\end{tikzpicture}
+\end{document}

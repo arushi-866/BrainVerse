@@ -75,7 +75,7 @@ const upload = multer({
 app.use(express.json());
 
 // Initialize Gemini API
-const genAI = new GoogleGenerativeAI("AIzaSyCnRDFKKF1IDvk4ytxb9eJIV6BrJZdLB2Y");
+const genAI = new GoogleGenerativeAI("AIzaSyDrW-KY2fbRVJBDY2WLd1s2u3HkNBPBC5E");
 
 // Function to extract text from PDF
 async function extractTextFromPdf(filePath) {

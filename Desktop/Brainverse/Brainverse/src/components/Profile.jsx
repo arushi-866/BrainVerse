@@ -63,7 +63,7 @@ const ProfilePage = () => {
   const [profileData, setProfileData] = useState({
     name: "",
     email: "",
-    title: "AI Study Enthusiast"
+    title: ""
   });
 
   const [user, setUser] = useState(defaultUserData);
@@ -97,7 +97,7 @@ const ProfilePage = () => {
         const transformedData = {
           fullName: userData.fullName || "",
           email: userData.email || "",
-          title: userData.title || "AI Study Enthusiast",
+          title: userData.title || "",
           stats: {
             summaries: userData.stats?.summaries || 0,
             mindMaps: userData.stats?.mindMaps || 0,
